@@ -9,6 +9,9 @@ router.post('/store', authenticate, RegionController.createRegion);
 // Get all regions
 router.get('/index', authenticate, RegionController.getAllRegions);
 
+// Filter regions
+router.get('/filter', authenticate,RegionController.filterRegions);
+
 // Get a region by ID
 router.get('/show/:id', authenticate, RegionController.getRegionById);
 

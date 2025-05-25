@@ -11,6 +11,8 @@ router.get('/index', authenticate, BranchController.getAllBranches);
 
 // Get a branch by ID
 router.get('/show/:id', authenticate, BranchController.getBranchById);
+// Filter branches
+router.get('/filter', authenticate,BranchController.filterBranches);
 
 // Update a branch
 router.put('/update/:id', authenticate, BranchController.updateBranch);

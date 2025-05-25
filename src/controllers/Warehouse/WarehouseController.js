@@ -33,6 +33,19 @@ exports.getAll = (req, res) => {
   });
 };
 
+// Filter warehouses
+exports.filter = (req, res) => {
+  const { branch_name, name, phone_1, phone_2, address } = req.query;
+  Warehouse.filter({ branch_name, name, phone_1, phone_2, address }, (err, result) => {
+    if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_warehouses') });
+    res.status(200).json(result);
+  });
+};
+
+
+
+
+
 // Get warehouse by ID
 exports.getById = (req, res) => {
   const { id } = req.params;

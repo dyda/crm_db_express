@@ -22,6 +22,59 @@ class Region {
     `;
     db.query(query, callback);
   }
+  static filter(filters, callback) {
+    let query = `
+      SELECT region.*, 
+             city.name AS city_name, 
+             zone.name AS zone_name, 
+             users.name AS user_name
+      FROM region
+      LEFT JOIN city ON region.city_id = city.id
+      LEFT JOIN zone ON region.zone_id = zone.id
+      LEFT JOIN users ON region.user_id = users.id
+      WHERE region.deleted_at IS NULL
+    `;
+  
+    const conditions = [];
+    const values = [];
+  
+    // Add filters dynamically
+    if (filters.region_id) {
+      conditions.push(`region.id = ?`);
+      values.push(filters.region_id);
+    }
+  
+    if (filters.region_name) {
+      conditions.push(`region.name LIKE ?`);
+      values.push(`%${filters.region_name}%`);
+    }
+  
+    if (filters.city_name) {
+      conditions.push(`city.name LIKE ?`);
+      values.push(`%${filters.city_name}%`);
+    }
+  
+    if (filters.zone_name) {
+      conditions.push(`zone.name LIKE ?`);
+      values.push(`%${filters.zone_name}%`);
+    }
+  
+    if (filters.user_name) {
+      conditions.push(`users.name LIKE ?`);
+      values.push(`%${filters.user_name}%`);
+    }
+  
+    // Append conditions to the query
+    if (conditions.length > 0) {
+      query += ' AND ' + conditions.join(' || ');
+    }
+  
+    // Debugging logs
+   // console.log('Generated Query:', query);
+   // console.log('Query Values:', values);
+  
+    db.query(query, values, callback);
+  }
 
   static getById(id, callback) {
     const query = `

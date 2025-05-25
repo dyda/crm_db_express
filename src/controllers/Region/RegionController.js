@@ -1,10 +1,10 @@
-const Region = require('../../models/region/Region');
-const City = require('../../models/City/City');
-const Zone = require('../../models/Zone/Zone');
-const i18n = require('../../config/i18nConfig');
+import Region from '../../models/Region/Region.js';
+import City from '../../models/City/City.js';
+import Zone from '../../models/Zone/Zone.js';
+import i18n from '../../config/i18nConfig.js';
 
 // Create region
-exports.createRegion = (req, res) => {
+export const createRegion = (req, res) => {
   let { name, city_id, zone_id, user_id, type, sales_target, description, state } = req.body;
 
   // Validate required fields
@@ -14,7 +14,7 @@ exports.createRegion = (req, res) => {
 
   // Set default values
   type = type ?? '';
-  sales_target = Number(sales_target) || 0;
+  sales_target = isNaN(Number(sales_target)) ? 0 : Number(sales_target);
   description = description ?? '';
   state = state ?? '';
 
@@ -44,15 +44,35 @@ exports.createRegion = (req, res) => {
 };
 
 // Get all regions
-exports.getAllRegions = (req, res) => {
+export const getAllRegions = (req, res) => {
   Region.getAll((err, result) => {
     if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_regions') });
     res.status(200).json(result);
   });
 };
 
+// Filter regions
+export const filterRegions = (req, res) => {
+  const filters = {
+    region_id: req.query.region_id?.trim() || null,
+    region_name: req.query.region_name?.trim() || null,
+    city_name: req.query.city_name?.trim() || null,
+    zone_name: req.query.zone_name?.trim() || null,
+    user_name: req.query.user_name?.trim() || null,
+  };
+
+  Region.filter(filters, (err, results) => {
+    if (err) {
+      console.error('Error filtering regions:', err);
+      return res.status(500).json({ error: i18n.__('messages.error_filtering_regions') });
+    }
+
+    res.status(200).json(results);
+  });
+};
+
 // Get region by ID
-exports.getRegionById = (req, res) => {
+export const getRegionById = (req, res) => {
   const { id } = req.params;
 
   Region.getById(id, (err, result) => {
@@ -67,7 +87,7 @@ exports.getRegionById = (req, res) => {
 };
 
 // Update region
-exports.updateRegion = (req, res) => {
+export const updateRegion = (req, res) => {
   const { id } = req.params;
   let { name, city_id, zone_id, user_id, type, sales_target, description, state } = req.body;
 
@@ -76,7 +96,7 @@ exports.updateRegion = (req, res) => {
   if (!zone_id) return res.status(400).json({ error: i18n.__('validation.required.zone_id') });
 
   type = type ?? '';
-  sales_target = Number(sales_target) || 0;
+  sales_target = isNaN(Number(sales_target)) ? 0 : Number(sales_target);
   description = description ?? '';
   state = state ?? '';
 
@@ -106,7 +126,7 @@ exports.updateRegion = (req, res) => {
 };
 
 // Soft delete region
-exports.deleteRegion = (req, res) => {
+export const deleteRegion = (req, res) => {
   const { id } = req.params;
 
   Region.deleteSoft(id, (err, result) => {

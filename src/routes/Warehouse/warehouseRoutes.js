@@ -7,6 +7,7 @@ router.post('/store',authenticate, WarehouseController.create);
 
 // Get all warehouse
 router.get('/index', authenticate,WarehouseController.getAll);             
+router.get('/filter', WarehouseController.filter);
 
 // Get a warehouse by ID
 router.get('/show/:id', authenticate,WarehouseController.getById);         

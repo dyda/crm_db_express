@@ -148,9 +148,21 @@ exports.login = (req, res) => {
     }
 
     // Generate token
-    const token = jwt.sign({ id: user.id, username: user.username }, 'your_jwt_secret', { expiresIn: '1h' });
+     const expiresIn = 2 * 60 * 60; // the token will be valid for 2 hours
+     //const expiresIn = 3 * 60; //  the token will be valid for 3 minute
 
-    res.status(200).json({ message: i18n.__('messages.login_successful'), token });
+    
+    const token = jwt.sign({ id: user.id, username: user.username }, 'your_jwt_secret', { expiresIn });
+    
+    // Calculate expiry timestamp for frontend (milliseconds)
+    const expiryTimestamp = Date.now() + expiresIn * 1000;
+    // Set token and expiry in response headers
+
+      res.status(200).json({
+      message: i18n.__('messages.login_successful'),
+      token,
+      expiresAt: expiryTimestamp
+    });
   });
 };
 
