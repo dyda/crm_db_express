@@ -49,15 +49,19 @@ exports.createItemPrice = (req, res) => {
   });
 };
 
-// Get All Item Prices
-exports.getAllItemPrices = (req, res) => {
-  ItemPrice.getAll((err, results) => {
-    if (err) {
-      return res.status(500).json({ error: i18n.__('messages.error_fetching_item_prices') });
+  // Get All Item Prices
+  exports.getAllItemPrices = (req, res) => {
+    const itemId = req.query.item_id;
+    if (!itemId) {
+      return res.status(400).json({ error: 'item_id is required' });
     }
-    res.status(200).json(results);
-  });
-};
+    ItemPrice.getAll(itemId, (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: 'Error fetching item prices' });
+      }
+      res.status(200).json(results);
+    });
+  };
 
 // Get Item Price by ID
 exports.getItemPriceById = (req, res) => {

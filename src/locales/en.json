@@ -48,7 +48,9 @@
 			"token": "Access denied. No token provided.",
 			"zone_name": "Zone name is required",
 			"warehouse_name": "Warehouse name is required",
-			"fields": "All required fields must be provided"
+			"fields": "All required fields must be provided",
+			"user_image": "User image is required",
+			"search": "Search term is required."
 		},
 		"invalid": {
 			"company_id": "Invalid Company ID",
@@ -117,6 +119,9 @@
 		"delete": {
 			"not_found": "Invoice not found",
 			"success": "Invoice successfully deleted"
+		},
+		"length": {
+			"item_name": "Item name must be between 2 and 200 characters."
 		}
 	},
 	"messages": {
@@ -324,7 +329,11 @@
 		"buy_item_deleted": "Buy item successfully deleted",
 		"error_creating_buy_item": "Error occurred while creating the buy item",
 		"error_updating_buy_item": "Error occurred while updating the buy item",
-		"error_deleting_buy_item": "Error occurred while deleting the buy item"
+		"error_deleting_buy_item": "Error occurred while deleting the buy item",
+		"item_quantity_deleted": "messages.item_quantity_deleted",
+		"item_quantity_updated": "messages.item_quantity_updated",
+		"transaction_created": "messages.transaction_created",
+		"transaction_deleted": "messages.transaction_deleted"
 	},
 	"types": {
 		"direct": "Direct",

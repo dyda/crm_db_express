@@ -6,19 +6,19 @@ const authenticate=require('../../middlewares/authMiddleware');
 // Create a Salaru category
 router.post('/store', authenticate,SalaryController.createSalary);
 
-// Get all Salaru categories
+// Get all Salary
 router.get('/index', authenticate,SalaryController.getAllSalaries);
 
-// Get a customer category by ID
+// Get a Salary
 router.get('/show/:id', authenticate,SalaryController.getSalaryById);
 
-// Get Salaru by Date Range
-router.get('/show-date', SalaryController.getSalariesByDateRange);
+// Get Salary by Date Range
+router.get('/filter', authenticate, SalaryController.filterSalaries);
 
-// Update a Salaru category
+// Update a Salary
 router.put('/update/:id', authenticate,SalaryController.updateSalary);
 
-// Soft delete a Salaru category
+// Soft delete a Salary
 router.delete('/delete/:id', authenticate,SalaryController.deleteSalary);
 
 module.exports = router;

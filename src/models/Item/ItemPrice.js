@@ -8,9 +8,14 @@ class ItemPrice {
     db.query(query, values, callback);
   }
 
-  static getAll(callback) {
-    const query = 'SELECT * FROM item_price WHERE deleted_at IS NULL';
-    db.query(query, callback);
+   static getAll(itemId, callback) {
+    let query = 'SELECT * FROM item_price WHERE deleted_at IS NULL';
+    let values = [];
+    if (itemId) {
+      query += ' AND item_id = ?';
+      values.push(itemId);
+    }
+    db.query(query, values, callback);
   }
 
   static getById(id, callback) {

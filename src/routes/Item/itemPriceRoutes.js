@@ -7,7 +7,7 @@ const authenticate = require('../../middlewares/authMiddleware');
 router.post('/store', authenticate, ItemPriceController.createItemPrice);
 
 // Get all item prices
-router.get('/index', authenticate, ItemPriceController.getAllItemPrices);
+router.get('/index/', authenticate, ItemPriceController.getAllItemPrices);
 
 // Get an item price by ID
 router.get('/show/:id', authenticate, ItemPriceController.getItemPriceById);

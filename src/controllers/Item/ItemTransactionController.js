@@ -3,32 +3,34 @@ const ItemQuantity = require('../../models/Item/ItemQuantity');
 const Warehouse = require('../../models/Warehouse/Warehouse');
 const Employee = require('../../models/User/User');
 const Item = require('../../models/Item/Item');
+const ItemUnit = require('../../models/Item/ItemUnit'); // Import your ItemUnit model
+
 const i18n = require('../../config/i18nConfig'); // Import i18n for localization
 
 // Helper function to validate required fields
 const validateRequiredFields = (fields) => {
-  const { type, warehouse_id, item_id, quantity, employee_id } = fields;
-  if (!type) {
-    return i18n.__('validation.required.transaction_type');
-  }
-  if (!warehouse_id) {
-    return i18n.__('validation.required.warehouse_id');
-  }
-  if (!item_id) {
-    return i18n.__('validation.required.item_id');
-  }
-  if (!quantity) {
-    return i18n.__('validation.required.quantity');
-  }
-  if (!employee_id) {
-    return i18n.__('validation.required.employee_id');
-  }
+  const { type, warehouse_id, item_id, unit_id, quantity, employee_id } = fields;
+  if (!type) return i18n.__('validation.required.transaction_type');
+  if (!warehouse_id) return i18n.__('validation.required.warehouse_id');
+  if (!item_id) return i18n.__('validation.required.item_id');
+  if (!unit_id) return i18n.__('validation.required.unit_id');
+  if (!quantity) return i18n.__('validation.required.quantity');
+  if (!employee_id) return i18n.__('validation.required.employee_id');
   return null;
 };
 
+// Helper to get conversion factor
+const getConversionFactor = (unit_id, callback) => {
+  ItemUnit.getById(unit_id, (err, unitResult) => {
+    if (err || !unitResult || unitResult.length === 0) return callback(1); // Default to 1 if not found
+    callback(unitResult[0].conversion_factor || 1);
+  });
+};
+
+
 // Create Item Transaction
 exports.createTransaction = (req, res) => {
-  const { type, warehouse_id, item_id, quantity, employee_id, note } = req.body;
+  const { type, warehouse_id, item_id, unit_id, quantity, employee_id, note } = req.body;
 
   // Validate required fields
   const validationError = validateRequiredFields(req.body);
@@ -52,32 +54,37 @@ exports.createTransaction = (req, res) => {
           return res.status(400).json({ error: i18n.__('validation.invalid.employee_id') });
         }
 
-        // Adjust item quantity based on the type
-        if (type === '+') {
-          ItemQuantity.increaseQuantity(warehouse_id, item_id, quantity, (err, updateResult) => {
-            if (err) return res.status(500).json({ error: i18n.__('messages.error_increasing_item_quantity') });
+           // Get conversion factor for unit
+        getConversionFactor(unit_id, (conversion_factor) => {
+          const baseQuantity = parseFloat(quantity) * parseFloat(conversion_factor);
 
-            // Create item transaction record
-            const transactionData = { type, warehouse_id, item_id, quantity, employee_id, note };
-            ItemTransaction.create(transactionData, (err, result) => {
-              if (err) return res.status(500).json({ error: i18n.__('messages.error_creating_transaction') });
-              res.status(201).json({ message: i18n.__('messages.transaction_created'), id: result.insertId });
-            });
-          });
-        } else if (type === '-') {
-          ItemQuantity.decreaseQuantity(warehouse_id, item_id, quantity, (err, updateResult) => {
-            if (err) return res.status(500).json({ error: i18n.__('messages.error_decreasing_item_quantity') });
+          // Adjust item quantity based on the type
+          if (type === '+') {
+            ItemQuantity.increaseQuantity(warehouse_id, item_id, baseQuantity, (err, updateResult) => {
+              if (err) return res.status(500).json({ error: i18n.__('messages.error_increasing_item_quantity') });
 
-            // Create item transaction record
-            const transactionData = { type, warehouse_id, item_id, quantity, employee_id, note };
-            ItemTransaction.create(transactionData, (err, result) => {
-              if (err) return res.status(500).json({ error: i18n.__('messages.error_creating_transaction') });
-              res.status(201).json({ message: i18n.__('messages.transaction_created'), id: result.insertId });
+              // Create item transaction record
+              const transactionData = { type, warehouse_id, item_id, unit_id, quantity, employee_id, note };
+              ItemTransaction.create(transactionData, (err, result) => {
+                if (err) return res.status(500).json({ error: i18n.__('messages.error_creating_transaction') });
+                res.status(201).json({ message: i18n.__('messages.transaction_created'), id: result.insertId });
+              });
             });
-          });
-        } else {
-          return res.status(400).json({ error: i18n.__('validation.invalid.transaction_type') });
-        }
+          } else if (type === '-') {
+            ItemQuantity.decreaseQuantity(warehouse_id, item_id, baseQuantity, (err, updateResult) => {
+              if (err) return res.status(500).json({ error: i18n.__('messages.error_decreasing_item_quantity') });
+
+              // Create item transaction record
+              const transactionData = { type, warehouse_id, item_id, unit_id, quantity, employee_id, note };
+              ItemTransaction.create(transactionData, (err, result) => {
+                if (err) return res.status(500).json({ error: i18n.__('messages.error_creating_transaction') });
+                res.status(201).json({ message: i18n.__('messages.transaction_created'), id: result.insertId });
+              });
+            });
+          } else {
+            return res.status(400).json({ error: i18n.__('validation.invalid.transaction_type') });
+          }
+        });
       });
     });
   });
@@ -124,58 +131,64 @@ exports.getTransactionsByFilters = (req, res) => {
 
 
 // Update Item Transaction
+// --- UPDATE ---
 exports.updateTransaction = (req, res) => {
-    const { id } = req.params;
-    const { type, warehouse_id, item_id, quantity, employee_id, note } = req.body;
-  
-    // Validate required fields
-    const validationError = validateRequiredFields(req.body);
-    if (validationError) {
-      return res.status(400).json({ error: validationError });
-    }
-  
-    // Get the existing item transaction details
+  const { id } = req.params;
+  const { type, warehouse_id, item_id, unit_id, quantity, employee_id, note } = req.body;
+
+  // Validate required fields
+  const validationError = validateRequiredFields(req.body);
+  if (validationError) {
+    return res.status(400).json({ error: validationError });
+  }
+
+  // Get the existing item transaction details
   ItemTransaction.getById(id, (err, existingTransaction) => {
     if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_transaction') });
     if (existingTransaction.length === 0) {
       return res.status(404).json({ error: i18n.__('validation.invalid.transaction_not_found') });
     }
-      const oldTransaction = existingTransaction[0];
-      const oldQuantity = parseFloat(oldTransaction.quantity);
-      const oldType = oldTransaction.type;
-      const newQuantity = parseFloat(quantity);
-      const quantityDifference = newQuantity - oldQuantity;
+    const oldTransaction = existingTransaction[0];
+    const oldQuantity = parseFloat(oldTransaction.quantity);
+    const oldType = oldTransaction.type;
+    const oldUnitId = oldTransaction.unit_id;
 
-      // Adjust item quantity based on the type and difference
-      const adjustQuantity = (callback) => {
-        if (oldType === '+' && type === '+') {
-          ItemQuantity.increaseQuantity(warehouse_id, item_id, quantityDifference, callback);
-        } else if (oldType === '-' && type === '-') {
-          ItemQuantity.decreaseQuantity(warehouse_id, item_id, quantityDifference, callback);
-        } else if (oldType === '+' && type === '-') {
-         
-          ItemQuantity.decreaseQuantity(warehouse_id, item_id, oldQuantity + newQuantity, callback);
-        } else if (oldType === '-' && type === '+') {
+    // Get conversion factors for old and new units
+    getConversionFactor(oldUnitId, (oldConversion) => {
+      getConversionFactor(unit_id, (newConversion) => {
+        const oldBaseQuantity = oldQuantity * oldConversion;
+        const newBaseQuantity = parseFloat(quantity) * newConversion;
+        const quantityDifference = newBaseQuantity - oldBaseQuantity;
 
-          
-          ItemQuantity.increaseQuantity(warehouse_id, item_id, oldQuantity + newQuantity, callback);
-        } else {
-          return res.status(400).json({ error: i18n.__('validation.invalid.transaction_type') });
-        }
-      };
-  
-      adjustQuantity((err, updateResult) => {
-        if (err) return res.status(500).json({ error: i18n.__('messages.error_updating_transaction') });
-  
-        // Update item transaction record
-        const transactionData = { type, warehouse_id, item_id, quantity, employee_id, note };
-        ItemTransaction.update(id, transactionData, (err, result) => {
+        // Adjust item quantity based on the type and difference
+        const adjustQuantity = (callback) => {
+          if (oldType === '+' && type === '+') {
+            ItemQuantity.increaseQuantity(warehouse_id, item_id, quantityDifference, callback);
+          } else if (oldType === '-' && type === '-') {
+            ItemQuantity.decreaseQuantity(warehouse_id, item_id, quantityDifference, callback);
+          } else if (oldType === '+' && type === '-') {
+            ItemQuantity.decreaseQuantity(warehouse_id, item_id, oldBaseQuantity + newBaseQuantity, callback);
+          } else if (oldType === '-' && type === '+') {
+            ItemQuantity.increaseQuantity(warehouse_id, item_id, oldBaseQuantity + newBaseQuantity, callback);
+          } else {
+            return res.status(400).json({ error: i18n.__('validation.invalid.transaction_type') });
+          }
+        };
+
+        adjustQuantity((err, updateResult) => {
           if (err) return res.status(500).json({ error: i18n.__('messages.error_updating_transaction') });
-          res.status(200).json({ message: i18n.__('messages.transaction_updated') });
+
+          // Update item transaction record
+          const transactionData = { type, warehouse_id, item_id, unit_id, quantity, employee_id, note };
+          ItemTransaction.update(id, transactionData, (err, result) => {
+            if (err) return res.status(500).json({ error: i18n.__('messages.error_updating_transaction') });
+            res.status(200).json({ message: i18n.__('messages.transaction_updated') });
+          });
         });
       });
     });
-  };
+  });
+};
 
 // Delete Item Transaction
 exports.deleteTransaction = (req, res) => {
@@ -188,25 +201,30 @@ exports.deleteTransaction = (req, res) => {
 
     const transactionData = result[0];
 
-    // Soft delete the item transaction
-    ItemTransaction.deleteSoft(id, (err, deleteResult) => {
-      if (err) return res.status(500).json({ error: i18n.__('messages.error_deleting_transaction') });
-      if (deleteResult.affectedRows === 0) return res.status(404).json({ error: i18n.__('validation.invalid.transaction_not_found') });
+    // Get conversion factor for the transaction's unit
+    getConversionFactor(transactionData.unit_id, (conversion_factor) => {
+      const baseQuantity = parseFloat(transactionData.quantity) * parseFloat(conversion_factor);
 
-      // Adjust item quantity based on the type
-      if (transactionData.type === '+') {
-        ItemQuantity.decreaseQuantity(transactionData.warehouse_id, transactionData.item_id, transactionData.quantity, (err, updateResult) => {
-          if (err) return res.status(500).json({ error: i18n.__('messages.error_decreasing_item_quantity') });
-          res.status(200).json({ message: i18n.__('messages.transaction_deleted') });
-        });
-      } else if (transactionData.type === '-') {
-        ItemQuantity.increaseQuantity(transactionData.warehouse_id, transactionData.item_id, transactionData.quantity, (err, updateResult) => {
-          if (err) return res.status(500).json({ error: i18n.__('messages.error_increasing_item_quantity') });
-          res.status(200).json({ message: i18n.__('messages.transaction_deleted') });
-        });
-      } else {
-        return res.status(400).json({ error: i18n.__('validation.invalid.transaction_type') });
-      }
+      // Soft delete the item transaction
+      ItemTransaction.deleteSoft(id, (err, deleteResult) => {
+        if (err) return res.status(500).json({ error: i18n.__('messages.error_deleting_transaction') });
+        if (deleteResult.affectedRows === 0) return res.status(404).json({ error: i18n.__('validation.invalid.transaction_not_found') });
+
+        // Adjust item quantity based on the type
+        if (transactionData.type === '+') {
+          ItemQuantity.decreaseQuantity(transactionData.warehouse_id, transactionData.item_id, baseQuantity, (err, updateResult) => {
+            if (err) return res.status(500).json({ error: i18n.__('messages.error_decreasing_item_quantity') });
+            res.status(200).json({ message: i18n.__('messages.transaction_deleted') });
+          });
+        } else if (transactionData.type === '-') {
+          ItemQuantity.increaseQuantity(transactionData.warehouse_id, transactionData.item_id, baseQuantity, (err, updateResult) => {
+            if (err) return res.status(500).json({ error: i18n.__('messages.error_increasing_item_quantity') });
+            res.status(200).json({ message: i18n.__('messages.transaction_deleted') });
+          });
+        } else {
+          return res.status(400).json({ error: i18n.__('validation.invalid.transaction_type') });
+        }
+      });
     });
   });
 };

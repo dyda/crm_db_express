@@ -3,54 +3,87 @@ const Branch = require('../../models/Branch/Branch');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const i18n = require('../../config/i18nConfig'); // Import i18n for localization
+const multer = require('multer');
+const path = require('path');
 
+// File upload setup
+const upload = multer({
+  dest: path.join(__dirname, '../../uploads'),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'image/svg+xml', 'image/bmp', 'image/tiff', 'image/avif'
+    ];
+    if (!allowedTypes.includes(file.mimetype)) {
+      req.fileValidationError = 'Invalid file type';
+      return cb(null, false);
+    }
+    cb(null, true);
+  },
+});
 // Create user
-exports.create = (req, res) => {
-  const { name, username, phone, image, branch_id, password, remember_token } = req.body;
+exports.create = [
+  upload.single('image'),
+  (req, res) => {
+    if (req.fileValidationError) {
+      return res.status(400).json({ error: i18n.__('validation.invalid.image_type') });
+    }
+
+const { name, username, phone, branch_id, password, is_system_user, salary } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : null;
 
     // Validate input
-    if (!name) {
-      return res.status(400).json({ error: i18n.__('validation.required.user_name') });
-    }
-    if (!username) {
-      return res.status(400).json({ error: i18n.__('validation.required.username') });
-    }
-    if (!phone) {
-      return res.status(400).json({ error: i18n.__('validation.required.phone') });
-    }
-    if (!password) {
-      return res.status(400).json({ error: i18n.__('validation.required.password') });
-    }
-    if (!branch_id) {
-      return res.status(400).json({ error: i18n.__('validation.required.branch_id') });
-    }
-
-  // Check if branch_id is valid
-  Branch.getById(branch_id, (err, branchResult) => {
-    if (err || branchResult.length === 0) {
-      return res.status(400).json({ error: i18n.__('validation.invalid.branch_id') });
-    }
-
-     // Check if username is unique
-    User.getByUsername(username, (err, userResult) => {
-      if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_user') });
-      if (userResult.length > 0) {
-        return res.status(400).json({ error: i18n.__('validation.unique.username') });
+    if (!name) return res.status(400).json({ error: i18n.__('validation.required.user_name') });
+    if (!username) return res.status(400).json({ error: i18n.__('validation.required.username') });
+    if (!phone) return res.status(400).json({ error: i18n.__('validation.required.phone') });
+    if (!branch_id) return res.status(400).json({ error: i18n.__('validation.required.branch_id') });
+    if (is_system_user == 1 && !password) {
+    return res.status(400).json({ error: i18n.__('validation.required.password') });
+   }
+    Branch.getById(branch_id, (err, branchResult) => {
+      if (err || branchResult.length === 0) {
+        return res.status(400).json({ error: i18n.__('validation.invalid.branch_id') });
       }
 
-  // Hash password
-  const hashedPassword = bcrypt.hashSync(password, 10);
+      User.getByUsername(username, (err, userResult) => {
+        if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_user') });
+        if (userResult.length > 0) {
+          return res.status(400).json({ error: i18n.__('validation.unique.username') });
+        }
 
-  // Prepare data for saving
-  const userData = { name, username, phone, image, branch_id, password: hashedPassword, remember_token };
+        const userData = {
+              name,
+              username,
+              phone,
+              image,
+              branch_id,
+              is_system_user: is_system_user ? 1 : 0,
+              salary: salary !== undefined ? salary : 0
+            };
+            if (password) {
+              userData.password = bcrypt.hashSync(password, 10);
+            }
+        User.create(userData, (err, result) => {
+          if (err) return res.status(500).json({ error: i18n.__('messages.error_creating_user') });
+          res.status(201).json({ message: i18n.__('messages.user_created'), user: { id: result.insertId, ...userData } });
+        });
+      });
+    });
+  }
+];
 
-  User.create(userData, (err, result) => {
-    if (err) return res.status(500).json({ error: i18n.__('messages.error_creating_user') });
-    res.status(201).json({ message: i18n.__('messages.user_created'), user: { id: result.insertId, ...userData } });
+exports.filter = (req, res) => {
+  const { search } = req.query;
+  if (!search) {
+    return res.status(400).json({ error: i18n.__('validation.required.search') });
+  }
+  User.filter(search, (err, result) => {
+    if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_users') });
+    res.status(200).json(result);
   });
-});
-});
 };
+
 
 // Get all users
 exports.getAll = (req, res) => {
@@ -71,51 +104,55 @@ exports.getById = (req, res) => {
 };
 
 // Update user
-exports.update = (req, res) => {
-  const { id } = req.params;
-  const { name, username, phone, image, branch_id, password, remember_token } = req.body;
+exports.update = [
+  upload.single('image'),
+  (req, res) => {
+    const { id } = req.params;
 
-   // Validate input
-   if (!name) {
-    return res.status(400).json({ error: i18n.__('validation.required.user_name') });
-  }
-  if (!username) {
-    return res.status(400).json({ error: i18n.__('validation.required.username') });
-  }
-  if (!phone) {
-    return res.status(400).json({ error: i18n.__('validation.required.phone') });
-  }
-  if (!branch_id) {
-    return res.status(400).json({ error: i18n.__('validation.required.branch_id') });
-  }
+const { name, username, phone, branch_id, password, is_system_user, salary } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : req.body.image; // keep old if not uploading new
+  
+    // Validate input
+    if (!name) return res.status(400).json({ error: i18n.__('validation.required.user_name') });
+    if (!username) return res.status(400).json({ error: i18n.__('validation.required.username') });
+    if (!phone) return res.status(400).json({ error: i18n.__('validation.required.phone') });
+    if (!branch_id) return res.status(400).json({ error: i18n.__('validation.required.branch_id') });
+   // if (is_system_user == 1 && !password && !selectedUserId) return res.status(400).json({ error: i18n.__('validation.required.password') });
 
-    // Check if branch_id is valid
     Branch.getById(branch_id, (err, branchResult) => {
       if (err || branchResult.length === 0) {
         return res.status(400).json({ error: i18n.__('validation.invalid.branch_id') });
       }
 
-       // Check if username is unique
-     User.getByUsername(username, (err, userResult) => {
-      if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_user') });
-      if (userResult.length > 0) {
-        return res.status(400).json({ error: i18n.__('validation.unique.username') });
-      }
+      User.getByUsername(username, (err, userResult) => {
+        if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_user') });
+        // Allow update if username is unchanged or not taken by another user
+        if (userResult.length > 0 && userResult[0].id != id) {
+          return res.status(400).json({ error: i18n.__('validation.unique.username') });
+        }
 
-    // Hash password if provided
-    const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
-
-    // Prepare data for updating
-    const userData = { name, username, phone, image, branch_id, password: hashedPassword, remember_token };
-
-    User.update(id, userData, (err, result) => {
-      if (err) return res.status(500).json({ error: i18n.__('messages.error_updating_user') });
-      if (result.affectedRows === 0) return res.status(404).json({ error: i18n.__('validation.invalid.user_not_found') });
-      res.status(200).json({ message: i18n.__('messages.user_updated') });
+       const userData = {
+            name,
+            username,
+            phone,
+            image,
+            branch_id,
+            is_system_user: is_system_user ? 1 : 0,
+            salary: salary !== undefined ? salary : 0
+          };
+          if (password) {
+            userData.password = bcrypt.hashSync(password, 10);
+          }
+       
+        User.update(id, userData, (err, result) => {
+          if (err) return res.status(500).json({ error: i18n.__('messages.error_updating_user') });
+          if (result.affectedRows === 0) return res.status(404).json({ error: i18n.__('validation.invalid.user_not_found') });
+          res.status(200).json({ message: i18n.__('messages.user_updated') });
+        });
+      });
     });
-    });
-  });
-};
+  }
+];
 
 // Soft delete user
 exports.delete = (req, res) => {
@@ -153,7 +190,9 @@ exports.login = (req, res) => {
 
     
     const token = jwt.sign({ id: user.id, username: user.username }, 'your_jwt_secret', { expiresIn });
-    
+   // const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn });
+
+  
     // Calculate expiry timestamp for frontend (milliseconds)
     const expiryTimestamp = Date.now() + expiresIn * 1000;
     // Set token and expiry in response headers

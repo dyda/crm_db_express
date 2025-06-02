@@ -12,6 +12,9 @@ router.get('/index', authenticate, UserController.getAll);
 // Get a user by ID
 router.get('/show/:id', authenticate, UserController.getById);
 
+// get filtered users
+router.get('/filter', authenticate,UserController.filter);
+
 // Update a user
 router.put('/update/:id', authenticate, UserController.update);
 

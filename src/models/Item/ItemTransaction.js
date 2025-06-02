@@ -2,8 +2,9 @@ const db = require('../../config/db');
 
 class ItemTransaction {
   static create(data, callback) {
-    const query = `INSERT INTO item_transaction (type, warehouse_id, item_id, quantity, employee_id, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`;
-    const values = [data.type, data.warehouse_id, data.item_id, data.quantity, data.employee_id, data.note];
+    const query = `INSERT INTO item_transaction (type, warehouse_id, item_id, unit_id, quantity, employee_id, note, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    const values = [data.type, data.warehouse_id, data.item_id, data.unit_id, data.quantity, data.employee_id, data.note];
     db.query(query, values, callback);
   }
 
@@ -47,9 +48,10 @@ class ItemTransaction {
   } 
   
 
-  static update(id, data, callback) {
-    const query = `UPDATE item_transaction SET type = ?, warehouse_id = ?, item_id = ?, quantity = ?, employee_id = ?, note = ?, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL`;
-    const values = [data.type, data.warehouse_id, data.item_id, data.quantity, data.employee_id, data.note, id];
+   static update(id, data, callback) {
+    const query = `UPDATE item_transaction SET type = ?, warehouse_id = ?, item_id = ?, unit_id = ?, quantity = ?, employee_id = ?, note = ?, updated_at = NOW()
+                   WHERE id = ? AND deleted_at IS NULL`;
+    const values = [data.type, data.warehouse_id, data.item_id, data.unit_id, data.quantity, data.employee_id, data.note, id];
     db.query(query, values, callback);
   }
 
@@ -57,10 +59,6 @@ class ItemTransaction {
     const query = `UPDATE item_transaction SET deleted_at = NOW() WHERE id = ?`;
     db.query(query, [id], callback);
   }
-
-
-
-
 
 }
 
