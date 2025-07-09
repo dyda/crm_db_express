@@ -34,6 +34,10 @@ const itemPriceRoutes = require('./Item/itemPriceRoutes');
 const itemTransferRoutes = require('./Item/itemTransferRoutes');
 const itemTransactionRoutes = require('./Item/itemTransactionRoutes');
 
+// currency
+const currencyRoutes = require('./Currency/currencyRoutes');
+// currency convert 
+const currencyConvertRoutes = require('./Currency/CurrencyConvertRoutes');
 
  // Buy Incvoice
 const buyInvoiceRoutes = require('./Buy/buyInvoiceRoutes');
@@ -41,6 +45,9 @@ const buyItemRoutes = require('./Buy/buyItemRoutes');
 
 
 // Use the routes with the appropriate prefixes
+router.use('/currency', currencyRoutes);  // Adjust the path if needed
+router.use('/currency-convert', currencyConvertRoutes);  // Adjust the path if needed
+
 
 router.use('/company', companyRoutes);
 router.use('/capital', capitalRoutes);

@@ -50,7 +50,16 @@
 			"warehouse_name": "Warehouse name is required",
 			"fields": "All required fields must be provided",
 			"user_image": "User image is required",
-			"search": "Search term is required."
+			"search": "Search term is required.",
+			"currency_name": "Currency name is required",
+			"currency_symbol": "Currency symbol is required",
+			"currency_exchange_rate": "Currency exchange rate is required",
+			"currency_from_id": "Currency from ID is required",
+			"currency_to_id": "Currency to ID is required",
+			"amount_from": "Amount from is required",
+			"amount_to": "Amount to is required",
+			"rate_used": "Rate used is required",
+			"converted_at": "Converted at is required"
 		},
 		"invalid": {
 			"company_id": "Invalid Company ID",
@@ -333,7 +342,25 @@
 		"item_quantity_deleted": "messages.item_quantity_deleted",
 		"item_quantity_updated": "messages.item_quantity_updated",
 		"transaction_created": "messages.transaction_created",
-		"transaction_deleted": "messages.transaction_deleted"
+		"transaction_deleted": "messages.transaction_deleted",
+		"currency_created": "Currency successfully created",
+		"currency_updated": "Currency successfully updated",
+		"currency_deleted": "Currency successfully deleted",
+		"error_creating_currency": "Error occurred while creating the currency",
+		"error_fetching_currencies": "Error occurred while fetching currencies",
+		"error_fetching_currency": "Error occurred while fetching the currency",
+		"error_updating_currency": "Error occurred while updating the currency",
+		"error_deleting_currency": "Error occurred while deleting the currency",
+		"currency_not_found": "Currency not found",
+		"converter_created": "Currency conversion record created successfully",
+		"converter_updated": "Currency conversion record updated successfully",
+		"converter_deleted": "Currency conversion record deleted successfully",
+		"error_creating_converter": "Error occurred while creating the currency conversion record",
+		"error_fetching_converters": "Error occurred while fetching currency conversion records",
+		"error_fetching_converter": "Error occurred while fetching the currency conversion record",
+		"error_updating_converter": "Error occurred while updating the currency conversion record",
+		"error_deleting_converter": "Error occurred while deleting the currency conversion record",
+		"converter_not_found": "Currency conversion record not found"
 	},
 	"types": {
 		"direct": "Direct",
@@ -343,5 +370,10 @@
 	"payment_type": {
 		"payment": "Payment",
 		"receipt": "Receipt"
+	},
+	"currency": {
+		"symbol_required": "currency.symbol_required",
+		"create_success": "currency.create_success",
+		"not_found": "currency.not_found"
 	}
 }
