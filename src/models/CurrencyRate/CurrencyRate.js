@@ -5,14 +5,15 @@ class CurrencyRate {
    static create(data, callback) {
     const query = `
       INSERT INTO currency_rates 
-        (base_currency_id, currency_id, base_amount, target_amount, price_date, created_at)
-      VALUES (?, ?, ?, ?, ?, NOW())
+        (base_currency_id, currency_id, base_amount, target_amount, rate_used, price_date, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, NOW())
     `;
     const values = [
       data.base_currency_id,
       data.currency_id,
       data.base_amount,
       data.target_amount,
+      data.rate_used,
       data.price_date
     ];
     db.query(query, values, callback);
@@ -33,10 +34,11 @@ class CurrencyRate {
     db.query(query, [currency_id], callback);
   }
 
+  
   static update(id, data, callback) {
     const query = `
       UPDATE currency_rates 
-      SET base_currency_id = ?, currency_id = ?, base_amount = ?, target_amount = ?, price_date = ?
+      SET base_currency_id = ?, currency_id = ?, base_amount = ?, target_amount = ?, rate_used = ?, price_date = ?
       WHERE id = ? AND deleted_at IS NULL
     `;
     const values = [
@@ -44,6 +46,7 @@ class CurrencyRate {
       data.currency_id,
       data.base_amount,
       data.target_amount,
+      data.rate_used,
       data.price_date,
       id
     ];
