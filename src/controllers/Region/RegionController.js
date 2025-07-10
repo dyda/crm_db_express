@@ -1,10 +1,10 @@
-import Region from '../../models/Region/Region.js';
-import City from '../../models/City/City.js';
-import Zone from '../../models/Zone/Zone.js';
-import i18n from '../../config/i18nConfig.js';
+const Region = require('../../models/Region/Region');
+const City = require('../../models/City/City');
+const Zone = require('../../models/Zone/Zone');
+const i18n = require('../../config/i18nConfig');
 
 // Create region
-export const createRegion = (req, res) => {
+exports.createRegion = (req, res) => {
   let { name, city_id, zone_id, user_id, type, sales_target, description, state } = req.body;
 
   // Validate required fields
@@ -44,7 +44,7 @@ export const createRegion = (req, res) => {
 };
 
 // Get all regions
-export const getAllRegions = (req, res) => {
+exports.getAllRegions = (req, res) => {
   Region.getAll((err, result) => {
     if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_regions') });
     res.status(200).json(result);
@@ -52,7 +52,7 @@ export const getAllRegions = (req, res) => {
 };
 
 // Filter regions
-export const filterRegions = (req, res) => {
+exports.filterRegions = (req, res) => {
   const filters = {
     region_id: req.query.region_id?.trim() || null,
     region_name: req.query.region_name?.trim() || null,
@@ -72,7 +72,7 @@ export const filterRegions = (req, res) => {
 };
 
 // Get region by ID
-export const getRegionById = (req, res) => {
+exports.getRegionById = (req, res) => {
   const { id } = req.params;
 
   Region.getById(id, (err, result) => {
@@ -87,7 +87,7 @@ export const getRegionById = (req, res) => {
 };
 
 // Update region
-export const updateRegion = (req, res) => {
+exports.updateRegion = (req, res) => {
   const { id } = req.params;
   let { name, city_id, zone_id, user_id, type, sales_target, description, state } = req.body;
 
@@ -126,7 +126,7 @@ export const updateRegion = (req, res) => {
 };
 
 // Soft delete region
-export const deleteRegion = (req, res) => {
+exports.deleteRegion = (req, res) => {
   const { id } = req.params;
 
   Region.deleteSoft(id, (err, result) => {

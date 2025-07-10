@@ -58,8 +58,7 @@
 			"currency_to_id": "Currency to ID is required",
 			"amount_from": "Amount from is required",
 			"amount_to": "Amount to is required",
-			"rate_used": "Rate used is required",
-			"converted_at": "Converted at is required"
+			"rate_used": "Rate used is required"
 		},
 		"invalid": {
 			"company_id": "Invalid Company ID",
@@ -374,6 +373,17 @@
 	"currency": {
 		"symbol_required": "currency.symbol_required",
 		"create_success": "currency.create_success",
-		"not_found": "currency.not_found"
+		"not_found": "currency.not_found",
+		"rate_not_found": "currency.rate_not_found",
+		"rate_register_failed": "Failed to register currency rate.",
+		"rate_register_success": "Currency rate registered successfully.",
+		"rate_fetch_failed": "Failed to fetch currency rates.",
+		"rate_update_failed": "Failed to update currency rate.",
+		"rate_update_success": "Currency rate updated successfully.",
+		"rate_delete_failed": "Failed to delete currency rate.",
+		"rate_delete_success": "Currency rate deleted successfully.",
+		"rate_history_failed": "Failed to fetch currency rate history.",
+		"delete_success": "currency.delete_success",
+		"name_required": "currency.name_required"
 	}
 }

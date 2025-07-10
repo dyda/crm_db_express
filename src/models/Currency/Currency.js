@@ -18,6 +18,16 @@ class Currency {
     db.query(query, [id], callback);
   }
 
+  static getExchangeRateById(id, callback) {
+    const query = 'SELECT exchange_rate FROM currency WHERE id = ? AND deleted_at IS NULL';
+    db.query(query, [id], callback);
+  }
+
+  static updateExchangeRate(id, exchangeRate, callback) {
+    const query = 'UPDATE currency SET exchange_rate = ?, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL';
+    db.query(query, [exchangeRate, id], callback);
+  }
+
   static update(id, data, callback) {
     const query = `UPDATE currency SET name = ?, symbol = ?, exchange_rate = ?, is_base = ?, updated_at = NOW()
                    WHERE id = ? AND deleted_at IS NULL`;

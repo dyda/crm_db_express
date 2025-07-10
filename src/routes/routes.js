@@ -1,29 +1,31 @@
 const express = require('express');
 const router = express.Router();
 
-// Import the routes
-const companyRoutes = require('./Company/companyRoutes');  // Adjust the path if needed
-const capitalRoutes = require('./Capital/capitalRoutes');  
-const branchRoutes = require('./Branch/branchRoutes');  
-const cityRoutes = require('./City/cityRoutes');  
-const zoneRoutes = require('./Zone/zoneRoutes');  // Adjust the path if needed // Adjust the path if needed
-const regionRoutes = require('./Region/regionRoutes'); 
+// Company & Capital
+const companyRoutes = require('./Company/companyRoutes');
+const capitalRoutes = require('./Capital/capitalRoutes');
 
-// Adjust the path if needed // Adjust the path if needed
-// Adjust the path if needed
-const warehouseRoutes = require('./Warehouse/warehouseRoutes');  // Adjust the path if needed
-const customerRoutes = require('./Customer/customerRoutes'); 
-const customerCategoryRoutes = require('./Customer/customerCategoryRoutes');  // Adjust the path if needed // Adjust the path if needed
-const customerPaymentRoutes = require('./Customer/customerPaymentRoutes'); 
+// Branch, Warehouse, City, Zone, Region
+const branchRoutes = require('./Branch/branchRoutes');
+const warehouseRoutes = require('./Warehouse/warehouseRoutes');
+const cityRoutes = require('./City/cityRoutes');
+const zoneRoutes = require('./Zone/zoneRoutes');
+const regionRoutes = require('./Region/regionRoutes');
 
-const userRoutes = require('./User/userRoutes');  // Adjust the path if needed
+// Customer
+const customerRoutes = require('./Customer/customerRoutes');
+const customerCategoryRoutes = require('./Customer/customerCategoryRoutes');
+const customerPaymentRoutes = require('./Customer/customerPaymentRoutes');
+
+// User & Salary
+const userRoutes = require('./User/userRoutes');
 const salaryRoutes = require('./User/salaryRoutes');
+
+// Expenses
 const expensesCategoryRoutes = require('./Expenses/expensesCategoryRoutes');
 const expensesRoutes = require('./Expenses/expensesRoutes');
 
-
-// item 
-
+// Item
 const itemRoutes = require('./Item/itemRoutes');
 const itemQuantityRoutes = require('./Item/itemQuantityRoutes');
 const itemBrandRoutes = require('./Item/itemBrandRoutes');
@@ -34,44 +36,34 @@ const itemPriceRoutes = require('./Item/itemPriceRoutes');
 const itemTransferRoutes = require('./Item/itemTransferRoutes');
 const itemTransactionRoutes = require('./Item/itemTransactionRoutes');
 
-// currency
+// Currency
 const currencyRoutes = require('./Currency/currencyRoutes');
-// currency convert 
-const currencyConvertRoutes = require('./Currency/CurrencyConvertRoutes');
+const currencyRateRoutes = require('./CurrencyRate/currencyRateRoutes');
 
- // Buy Incvoice
+// Buy Invoice
 const buyInvoiceRoutes = require('./Buy/buyInvoiceRoutes');
 const buyItemRoutes = require('./Buy/buyItemRoutes');
 
-
-// Use the routes with the appropriate prefixes
-router.use('/currency', currencyRoutes);  // Adjust the path if needed
-router.use('/currency-convert', currencyConvertRoutes);  // Adjust the path if needed
-
-
+// Route usage
 router.use('/company', companyRoutes);
 router.use('/capital', capitalRoutes);
+
 router.use('/branch', branchRoutes);
 router.use('/warehouse', warehouseRoutes);
 router.use('/city', cityRoutes);
 router.use('/zone', zoneRoutes);
 router.use('/region', regionRoutes);
 
-//  customer
 router.use('/customer', customerRoutes);
 router.use('/customer-category', customerCategoryRoutes);
-
 router.use('/payments', customerPaymentRoutes);
- 
-//  employee
+
 router.use('/user', userRoutes);
 router.use('/salary', salaryRoutes);
 
-// expenses
 router.use('/expenses-category', expensesCategoryRoutes);
 router.use('/expenses', expensesRoutes);
 
-// item routes
 router.use('/item', itemRoutes);
 router.use('/item-quantity', itemQuantityRoutes);
 router.use('/item-brand', itemBrandRoutes);
@@ -82,10 +74,10 @@ router.use('/item-price', itemPriceRoutes);
 router.use('/item-transfer', itemTransferRoutes);
 router.use('/item-transaction', itemTransactionRoutes);
 
+router.use('/currency', currencyRoutes);
+router.use('/currency-rates', currencyRateRoutes);
 
-// Buy
 router.use('/buy-invoice', buyInvoiceRoutes);
 router.use('/buy-item', buyItemRoutes);
 
-// Export the router to use it in other files
 module.exports = router;
