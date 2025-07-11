@@ -18,6 +18,11 @@ class Currency {
     db.query(query, [id], callback);
   }
 
+  static getBaseCurrency(callback) {
+    const query = 'SELECT * FROM currency WHERE is_base = 1 AND deleted_at IS NULL LIMIT 1';
+    db.query(query, callback);
+  }
+
   static getExchangeRateById(id, callback) {
     const query = 'SELECT exchange_rate FROM currency WHERE id = ? AND deleted_at IS NULL';
     db.query(query, [id], callback);

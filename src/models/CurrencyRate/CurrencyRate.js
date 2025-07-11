@@ -20,7 +20,7 @@ class CurrencyRate {
   }
 
   static getAll(callback) {
-    const query = `SELECT * FROM currency_rates WHERE deleted_at IS NULL ORDER BY price_date DESC`;
+    const query = `SELECT * FROM currency_rates WHERE deleted_at IS NULL ORDER BY id DESC `;
     db.query(query, callback);
   }
 
@@ -30,7 +30,7 @@ class CurrencyRate {
   }
 
   static getHistory(currency_id, callback) {
-    const query = `SELECT * FROM currency_rates WHERE currency_id = ? AND deleted_at IS NULL ORDER BY price_date DESC`;
+    const query = `SELECT * FROM currency_rates WHERE currency_id = ? AND deleted_at IS NULL ORDER BY id DESC`;
     db.query(query, [currency_id], callback);
   }
 

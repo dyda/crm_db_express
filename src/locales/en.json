@@ -371,10 +371,19 @@
 		"receipt": "Receipt"
 	},
 	"currency": {
-		"symbol_required": "currency.symbol_required",
-		"create_success": "currency.create_success",
-		"not_found": "currency.not_found",
-		"rate_not_found": "currency.rate_not_found",
+		"name_required": "Currency name is required.",
+		"symbol_required": "Currency symbol is required.",
+		"exchange_rate_required": "Currency exchange rate is required.",
+		"create_failed": "Failed to create currency.",
+		"create_success": "Currency created successfully.",
+		"fetch_failed": "Failed to fetch currency.",
+		"not_found": "Currency not found.",
+		"base_not_found": "Base currency not found.",
+		"update_failed": "Failed to update currency.",
+		"update_success": "Currency updated successfully.",
+		"delete_failed": "Failed to delete currency.",
+		"delete_success": "Currency deleted successfully.",
+		"rate_not_found": "Currency rate not found.",
 		"rate_register_failed": "Failed to register currency rate.",
 		"rate_register_success": "Currency rate registered successfully.",
 		"rate_fetch_failed": "Failed to fetch currency rates.",
@@ -382,8 +391,6 @@
 		"rate_update_success": "Currency rate updated successfully.",
 		"rate_delete_failed": "Failed to delete currency rate.",
 		"rate_delete_success": "Currency rate deleted successfully.",
-		"rate_history_failed": "Failed to fetch currency rate history.",
-		"delete_success": "currency.delete_success",
-		"name_required": "currency.name_required"
-	}
+		"rate_history_failed": "Failed to fetch currency rate history."
+}
 }

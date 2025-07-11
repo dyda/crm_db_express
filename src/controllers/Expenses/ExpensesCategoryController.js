@@ -23,6 +23,14 @@ exports.getAllExpenseCategories = (req, res) => {
     res.status(200).json(results);
   });
 };
+// Get Filtered Expense Categories
+exports.getFilteredExpenseCategories = (req, res) => {
+  const filter = req.query;
+  ExpenseCategory.fillteredGetAll(filter, (err, results) => {
+    if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_expense_categories') });
+    res.status(200).json(results);
+  });
+};
 
 // Get Expense Category by ID
 exports.getExpenseCategoryById = (req, res) => {

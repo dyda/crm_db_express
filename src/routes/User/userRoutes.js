@@ -4,7 +4,7 @@ const UserController = require('../../controllers/User/UserController');
 const authenticate=require('../../middlewares/authMiddleware');
 
 // Create a user
-router.post('/store',authenticate, UserController.create);
+router.post('/store', authenticate,UserController.create);
 
 // Get all users
 router.get('/index', authenticate, UserController.getAll);

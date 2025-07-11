@@ -2,8 +2,19 @@ const db = require('../../config/db');
 
 class Expense {
   static create(data, callback) {
-    const query = `INSERT INTO expenses (employee_id, category_id, name, amount, note, branch_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const values = [data.employee_id, data.category_id, data.name, data.amount, data.note, data.branch_id, data.user_id];
+    const query = `INSERT INTO expenses (employee_id, category_id, name, amount, note, branch_id, user_id, expense_date, currency_id, exchange_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const values = [
+      data.employee_id,
+      data.category_id,
+      data.name,
+      data.amount,
+      data.note,
+      data.branch_id,
+      data.user_id,
+      data.expense_date,
+      data.currency_id,
+      data.exchange_rate,
+    ];
     db.query(query, values, callback);
   }
 
@@ -18,8 +29,20 @@ class Expense {
   }
 
   static update(id, data, callback) {
-    const query = `UPDATE expenses SET employee_id = ?, category_id = ?, name = ?, amount = ?, note = ?, branch_id = ?, user_id = ? WHERE id = ? AND deleted_at IS NULL`;
-    const values = [data.employee_id, data.category_id, data.name, data.amount, data.note, data.branch_id, data.user_id, id];
+    const query = `UPDATE expenses SET employee_id = ?, category_id = ?, name = ?, amount = ?, note = ?, branch_id = ?, user_id = ?, expense_date = ?, currency_id = ?, exchange_rate = ? WHERE id = ? AND deleted_at IS NULL`;
+    const values = [
+      data.employee_id,
+      data.category_id,
+      data.name,
+      data.amount,
+      data.note,
+      data.branch_id,
+      data.user_id,
+      data.expense_date,
+      data.currency_id,
+      data.exchange_rate,
+      id,
+    ];
     db.query(query, values, callback);
   }
 
@@ -27,7 +50,6 @@ class Expense {
     const query = `UPDATE expenses SET deleted_at = NOW() WHERE id = ?`;
     db.query(query, [id], callback);
   }
-
 
   static getByFilters(filters, callback) {
     let query = `SELECT * FROM expenses WHERE deleted_at IS NULL`;
@@ -57,12 +79,18 @@ class Expense {
         query += ` AND employee_id = ?`;
         values.push(filters.employee_id);
       }
+      if (filters.expense_date) {
+        query += ` AND expense_date = ?`;
+        values.push(filters.expense_date);
+      }
+      if (filters.currency_id) {
+        query += ` AND currency_id = ?`;
+        values.push(filters.currency_id);
+      }
     }
 
     db.query(query, values, callback);
   }
-
-
 }
 
 module.exports = Expense;

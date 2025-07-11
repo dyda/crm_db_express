@@ -12,6 +12,9 @@ router.get('/index', authenticate, ExpensesCategoryController.getAllExpenseCateg
 // Get an expense category by ID
 router.get('/show/:id', authenticate, ExpensesCategoryController.getExpenseCategoryById);
 
+// Get Filtered Expense Categories
+router.get('/filter', authenticate, ExpensesCategoryController.getFilteredExpenseCategories);
+
 // Update an expense category
 router.put('/update/:id', authenticate, ExpensesCategoryController.updateExpenseCategory);
 

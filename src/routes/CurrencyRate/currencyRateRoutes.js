@@ -12,6 +12,7 @@ router.get('/index', authenticate, CurrencyRateController.getAll);
 // Get rate by ID
 router.get('/show/:id', authenticate, CurrencyRateController.getById);
 
+
 // Update rate by ID
 router.put('/update/:id', authenticate, CurrencyRateController.update);
 
