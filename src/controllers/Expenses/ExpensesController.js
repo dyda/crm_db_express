@@ -1,37 +1,8 @@
 const Expense = require('../../models/Expenses/Expenses');
 const Branch = require('../../models/Branch/Branch');
+const { convertToBaseCurrency } = require('../../components/helpers');
 const Currency = require('../../models/Currency/Currency');
 const i18n = require('../../config/i18nConfig');
-
-// Helper: Get base currency id from Currency model
-const getBaseCurrencyId = () =>
-  new Promise((resolve, reject) => {
-    Currency.getBaseCurrency((err, rows) => {
-      if (err || !rows || !rows.length) return reject('Base currency not found');
-      resolve(rows[0].id);
-    });
-  });
-
-// Helper: Get exchange rate for a currency (relative to base)
-const getExchangeRate = (currency_id) =>
-  new Promise((resolve, reject) => {
-    Currency.getById(currency_id, (err, rows) => {
-      if (err || !rows || !rows.length) return reject('Currency not found');
-      resolve(rows[0].exchange_rate || 1);
-    });
-  });
-
-// Helper: Convert amount to base currency
-const convertToBaseCurrency = async (amount, currency_id) => {
-  const baseCurrencyId = await getBaseCurrencyId();
-  if (Number(currency_id) === Number(baseCurrencyId)) return { amountInBase: Number(amount), exchange_rate: 1 };
-
-  // Get exchange rate of this currency (relative to base)
-  const exchange_rate = await getExchangeRate(currency_id);
-  // Correct conversion: amount_in_base = amount / exchange_rate
-  const amountInBase = Number(amount) / Number(exchange_rate);
-  return { amountInBase, exchange_rate };
-};
 
 // Create Expense
 exports.createExpense = async (req, res) => {
@@ -54,13 +25,28 @@ exports.createExpense = async (req, res) => {
     try {
       const { amountInBase, exchange_rate } = await convertToBaseCurrency(amount, currency_id);
 
-      const expenseData = { employee_id, category_id, name, amount, note, branch_id, user_id, expense_date, currency_id, exchange_rate };
+      if (!exchange_rate || exchange_rate === 0) {
+        return res.status(400).json({ error: 'Exchange rate cannot be zero' });
+      }
+
+      const expenseData = {
+        employee_id,
+        category_id,
+        name,
+        amount: parseFloat(amount),
+        note,
+        branch_id,
+        user_id,
+        expense_date,
+        currency_id,
+        exchange_rate: parseFloat(exchange_rate)
+      };
 
       Expense.create(expenseData, (err, result) => {
         if (err) {
           return res.status(500).json({ error: i18n.__('messages.error_creating_expense') });
         }
-        Branch.decreaseWallet(branch_id, amountInBase, (err, updateResult) => {
+        Branch.decreaseWallet(branch_id, amountInBase, (err) => {
           if (err) {
             return res.status(500).json({ error: i18n.__('messages.error_decreasing_wallet') });
           }
@@ -101,15 +87,25 @@ exports.getExpenseById = (req, res) => {
 exports.getExpensesByFilters = (req, res) => {
   const filters = req.query;
 
-  // Validate required filters
-  if (!filters.id && (!filters.startDate || !filters.endDate)) {
-    return res.status(400).json({ error: i18n.__('validation.required.start_and_end_date_or_id') });
+  // Optional: Only block if no filters at all
+  if (
+    !filters.id &&
+    !filters.startDate &&
+    !filters.endDate &&
+    !filters.category_id &&
+    !filters.name &&
+    !filters.note &&
+    !filters.employee_id &&
+    !filters.branch_id &&
+    !filters.currency_id
+  ) {
+    return res.status(400).json({ error: i18n.__('validation.required.at_least_one_filter') });
   }
 
   Expense.getByFilters(filters, (err, results) => {
     if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_expenses') });
     if (results.length === 0) {
-      return res.status(404).json({ message: i18n.__('messages.no_expenses_found') });
+      return res.status(200).json({ expenses: [] });
     }
     res.status(200).json({
       message: i18n.__('messages.expenses_found', { count: results.length }),
@@ -144,11 +140,43 @@ exports.updateExpense = (req, res) => {
       const oldExpense = existingExpense[0];
 
       try {
-        const { amountInBase: oldAmountInBase } = await convertToBaseCurrency(oldExpense.amount, oldExpense.currency_id);
+        // --- Calculate old amount in base currency using the stored exchange_rate ---
+        let oldAmountInBase;
+        if (Number(oldExpense.currency_id) === Number(currency_id)) {
+          // Same currency, use stored exchange_rate for old, and new rate for new
+          if (!oldExpense.exchange_rate || Number(oldExpense.exchange_rate) === 0) {
+            return res.status(400).json({ error: 'Stored exchange rate cannot be zero' });
+          }
+          oldAmountInBase = parseFloat(oldExpense.amount) / parseFloat(oldExpense.exchange_rate);
+        } else {
+          // Different currency, use stored exchange_rate for old
+          if (!oldExpense.exchange_rate || Number(oldExpense.exchange_rate) === 0) {
+            return res.status(400).json({ error: 'Stored exchange rate cannot be zero' });
+          }
+          oldAmountInBase = parseFloat(oldExpense.amount) / parseFloat(oldExpense.exchange_rate);
+        }
+
+        // --- Calculate new amount in base currency using the current exchange_rate ---
         const { amountInBase: newAmountInBase, exchange_rate } = await convertToBaseCurrency(amount, currency_id);
+
+        if (!exchange_rate || exchange_rate === 0) {
+          return res.status(400).json({ error: 'Exchange rate cannot be zero' });
+        }
+
         const amountDifference = newAmountInBase - oldAmountInBase;
 
-        const expenseData = { employee_id, category_id, name, amount, note, branch_id, user_id, expense_date, currency_id, exchange_rate };
+        const expenseData = {
+          employee_id,
+          category_id,
+          name,
+          amount: parseFloat(amount),
+          note,
+          branch_id,
+          user_id,
+          expense_date,
+          currency_id,
+          exchange_rate: parseFloat(exchange_rate)
+        };
 
         Expense.update(id, expenseData, (err, result) => {
           if (err) {
@@ -159,7 +187,7 @@ exports.updateExpense = (req, res) => {
           }
           // Adjust the wallet amount in the branch
           if (amountDifference !== 0) {
-            Branch.decreaseWallet(branch_id, amountDifference, (err, updateResult) => {
+            Branch.decreaseWallet(branch_id, amountDifference, (err) => {
               if (err) return res.status(500).json({ error: i18n.__('messages.error_decreasing_wallet') });
               res.status(200).json({ message: i18n.__('messages.expense_updated') });
             });
@@ -186,16 +214,19 @@ exports.deleteExpense = (req, res) => {
     // Use the exchange_rate stored in the expense record
     let amountInBase;
     if (Number(expenseData.exchange_rate) && Number(expenseData.exchange_rate) !== 1) {
-      amountInBase = Number(expenseData.amount) / Number(expenseData.exchange_rate);
+      if (Number(expenseData.exchange_rate) === 0) {
+        return res.status(400).json({ error: 'Exchange rate cannot be zero' });
+      }
+      amountInBase = parseFloat(expenseData.amount) / parseFloat(expenseData.exchange_rate);
     } else {
-      amountInBase = Number(expenseData.amount);
+      amountInBase = parseFloat(expenseData.amount);
     }
 
     Expense.deleteSoft(expenseId, (err, deleteResult) => {
       if (err) return res.status(500).json({ error: i18n.__('messages.error_deleting_expense') });
       if (deleteResult.affectedRows === 0) return res.status(404).json({ error: i18n.__('validation.invalid.expense_not_found') });
 
-      Branch.increaseWallet(expenseData.branch_id, amountInBase, (err, updateResult) => {
+      Branch.increaseWallet(expenseData.branch_id, amountInBase, (err) => {
         if (err) return res.status(500).json({ error: i18n.__('messages.error_increasing_wallet') });
         res.status(200).json({ message: i18n.__('messages.expense_deleted') });
       });

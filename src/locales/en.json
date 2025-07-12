@@ -359,7 +359,10 @@
 		"error_fetching_converter": "Error occurred while fetching the currency conversion record",
 		"error_updating_converter": "Error occurred while updating the currency conversion record",
 		"error_deleting_converter": "Error occurred while deleting the currency conversion record",
-		"converter_not_found": "Currency conversion record not found"
+		"converter_not_found": "Currency conversion record not found",
+		"exchange_rate_zero": "Exchange rate cannot be zero",
+		"stored_exchange_rate_zero": "Stored exchange rate cannot be zero",
+		"currency_conversion_failed": "Currency conversion failed: {error}"
 	},
 	"types": {
 		"direct": "Direct",

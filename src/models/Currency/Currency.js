@@ -23,6 +23,7 @@ class Currency {
     db.query(query, callback);
   }
 
+
   static getExchangeRateById(id, callback) {
     const query = 'SELECT exchange_rate FROM currency WHERE id = ? AND deleted_at IS NULL';
     db.query(query, [id], callback);

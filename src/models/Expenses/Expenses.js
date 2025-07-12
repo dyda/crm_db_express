@@ -19,7 +19,7 @@ class Expense {
   }
 
   static getAll(callback) {
-    const query = `SELECT * FROM expenses WHERE deleted_at IS NULL`;
+    const query = `SELECT * FROM expenses WHERE deleted_at IS NULL ORDER BY id DESC`;
     db.query(query, callback);
   }
 
@@ -51,46 +51,58 @@ class Expense {
     db.query(query, [id], callback);
   }
 
-  static getByFilters(filters, callback) {
-    let query = `SELECT * FROM expenses WHERE deleted_at IS NULL`;
-    const values = [];
+static getByFilters(filters, callback) {
+  let query = `SELECT * FROM expenses WHERE deleted_at IS NULL`;
+  const values = [];
 
-    if (filters.id) {
-      query += ` AND id = ?`;
-      values.push(filters.id);
-    } else {
-      if (filters.startDate && filters.endDate) {
-        query += ` AND created_at BETWEEN ? AND ?`;
-        values.push(filters.startDate, filters.endDate);
-      }
-      if (filters.category_id) {
-        query += ` AND category_id = ?`;
-        values.push(filters.category_id);
-      }
-      if (filters.name) {
-        query += ` AND name LIKE ?`;
-        values.push(`%${filters.name}%`);
-      }
-      if (filters.note) {
-        query += ` AND note LIKE ?`;
-        values.push(`%${filters.note}%`);
-      }
-      if (filters.employee_id) {
-        query += ` AND employee_id = ?`;
-        values.push(filters.employee_id);
-      }
-      if (filters.expense_date) {
-        query += ` AND expense_date = ?`;
-        values.push(filters.expense_date);
-      }
-      if (filters.currency_id) {
-        query += ` AND currency_id = ?`;
-        values.push(filters.currency_id);
-      }
+  // If searching by id, ignore all other filters except id
+  if (filters.id) {
+    query += ` AND id = ?`;
+    values.push(filters.id);
+  } else {
+    // Require date range for all other filters
+    if (filters.startDate && filters.endDate) {
+      query += ` AND expense_date BETWEEN ? AND ?`;
+      values.push(filters.startDate, filters.endDate);
+    }
+    // AND for other filters
+    if (filters.category_id) {
+      query += ` AND category_id = ?`;
+      values.push(filters.category_id);
+    }
+    if (filters.branch_id) {
+      query += ` AND branch_id = ?`;
+      values.push(filters.branch_id);
+    }
+    if (filters.employee_id) {
+      query += ` AND employee_id = ?`;
+      values.push(filters.employee_id);
+    }
+    if (filters.currency_id) {
+      query += ` AND currency_id = ?`;
+      values.push(filters.currency_id);
     }
 
-    db.query(query, values, callback);
+    // OR for name/note
+    const orConditions = [];
+    const orValues = [];
+    if (filters.name) {
+      orConditions.push(`name LIKE ?`);
+      orValues.push(`%${filters.name}%`);
+    }
+    if (filters.note) {
+      orConditions.push(`note LIKE ?`);
+      orValues.push(`%${filters.note}%`);
+    }
+    if (orConditions.length > 0) {
+      query += ` AND (${orConditions.join(' OR ')})`;
+      values.push(...orValues);
+    }
   }
+
+  db.query(query, values, callback);
+}
+
 }
 
 module.exports = Expense;
