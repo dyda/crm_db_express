@@ -102,14 +102,11 @@ exports.getExpensesByFilters = (req, res) => {
     return res.status(400).json({ error: i18n.__('validation.required.at_least_one_filter') });
   }
 
-  Expense.getByFilters(filters, (err, results) => {
-    if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_expenses') });
-    if (results.length === 0) {
-      return res.status(200).json({ expenses: [] });
-    }
+  Expense.getByFilters(filters, (err, data) => {
+    if (err) return res.status(500).json({ error: req.__('messages.error_fetching_expenses') });
     res.status(200).json({
-      message: i18n.__('messages.expenses_found', { count: results.length }),
-      expenses: results
+      expenses: data.results,
+      total: data.total,
     });
   });
 };
