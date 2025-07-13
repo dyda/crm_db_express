@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const SalaryController = require('../../controllers/User/SalaryController');
+const SalaryController = require('../../controllers/Salary/SalaryController');
 const authenticate=require('../../middlewares/authMiddleware');
 
 // Create a Salaru category

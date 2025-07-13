@@ -19,7 +19,7 @@ const customerPaymentRoutes = require('./Customer/customerPaymentRoutes');
 
 // User & Salary
 const userRoutes = require('./User/userRoutes');
-const salaryRoutes = require('./User/salaryRoutes');
+const salaryRoutes = require('./Salary/salaryRoutes');
 
 // Expenses
 const expensesCategoryRoutes = require('./Expenses/expensesCategoryRoutes');
