@@ -86,6 +86,18 @@ exports.getItemById = (req, res) => {
   });
 };
 
+ // Get Filtered Items
+
+exports.getFilteredItems = (req, res) => {
+  const filters = req.query;
+  Item.getByFilters(filters, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: i18n.__('messages.error_fetching_item') });
+    }
+    res.status(200).json(results);
+  });
+};
+
 // Update Item (with image upload)
 exports.updateItem = [
   upload.single('image'),
