@@ -12,6 +12,7 @@ router.get('/index', authenticate, ItemController.getAllItems);
 // Get an item by ID
 router.get('/show/:id', authenticate, ItemController.getItemById);
 router.get('/filter', authenticate, ItemController.getFilteredItems);
+router.get('/search', ItemController.searchItems);
 
 // Update an item
 router.put('/update/:id', authenticate, ItemController.updateItem);

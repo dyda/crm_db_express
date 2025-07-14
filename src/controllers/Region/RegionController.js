@@ -1,141 +1,86 @@
 const Region = require('../../models/Region/Region');
-const City = require('../../models/City/City');
-const Zone = require('../../models/Zone/Zone');
 const i18n = require('../../config/i18nConfig');
 
-// Create region
-exports.createRegion = (req, res) => {
-  let { name, city_id, zone_id, user_id, type, sales_target, description, state } = req.body;
+const RegionController = {
+  // Create region
+  create: (req, res) => {
+    const { name, city_id, zone_id } = req.body;
 
-  // Validate required fields
-  if (!name) return res.status(400).json({ error: i18n.__('validation.required.region_name') });
-  if (!city_id) return res.status(400).json({ error: i18n.__('validation.required.city_id') });
-  if (!zone_id) return res.status(400).json({ error: i18n.__('validation.required.zone_id') });
-
-  // Set default values
-  type = type ?? '';
-  sales_target = isNaN(Number(sales_target)) ? 0 : Number(sales_target);
-  description = description ?? '';
-  state = state ?? '';
-
-  // Validate related entities
-  City.getById(city_id, (err, cityResult) => {
-    if (err || cityResult.length === 0) {
-      return res.status(400).json({ error: i18n.__('validation.invalid.city_id') });
-    }
-
-    Zone.getById(zone_id, (err, zoneResult) => {
-      if (err || zoneResult.length === 0) {
-        return res.status(400).json({ error: i18n.__('validation.invalid.zone_id') });
-      }
-
-      const regionData = { name, city_id, zone_id, user_id, type, sales_target, description, state };
-
-      Region.create(regionData, (err, result) => {
-        if (err) return res.status(500).json({ error: i18n.__('messages.error_creating_region') });
-
-        res.status(201).json({
-          message: i18n.__('messages.region_created'),
-          region: { id: result.insertId, ...regionData },
-        });
-      });
-    });
-  });
-};
-
-// Get all regions
-exports.getAllRegions = (req, res) => {
-  Region.getAll((err, result) => {
-    if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_regions') });
-    res.status(200).json(result);
-  });
-};
-
-// Filter regions
-exports.filterRegions = (req, res) => {
-  const filters = {
-    region_id: req.query.region_id?.trim() || null,
-    region_name: req.query.region_name?.trim() || null,
-    city_name: req.query.city_name?.trim() || null,
-    zone_name: req.query.zone_name?.trim() || null,
-    user_name: req.query.user_name?.trim() || null,
-  };
-
-  Region.filter(filters, (err, results) => {
-    if (err) {
-      console.error('Error filtering regions:', err);
-      return res.status(500).json({ error: i18n.__('messages.error_filtering_regions') });
-    }
-
-    res.status(200).json(results);
-  });
-};
-
-// Get region by ID
-exports.getRegionById = (req, res) => {
-  const { id } = req.params;
-
-  Region.getById(id, (err, result) => {
-    if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_region') });
-
-    if (result.length === 0) {
-      return res.status(404).json({ error: i18n.__('validation.invalid.region_not_found') });
-    }
-
-    res.status(200).json(result[0]);
-  });
-};
-
-// Update region
-exports.updateRegion = (req, res) => {
-  const { id } = req.params;
-  let { name, city_id, zone_id, user_id, type, sales_target, description, state } = req.body;
-
-  if (!name) return res.status(400).json({ error: i18n.__('validation.required.region_name') });
-  if (!city_id) return res.status(400).json({ error: i18n.__('validation.required.city_id') });
-  if (!zone_id) return res.status(400).json({ error: i18n.__('validation.required.zone_id') });
-
-  type = type ?? '';
-  sales_target = isNaN(Number(sales_target)) ? 0 : Number(sales_target);
-  description = description ?? '';
-  state = state ?? '';
-
-  City.getById(city_id, (err, cityResult) => {
-    if (err || cityResult.length === 0) {
-      return res.status(400).json({ error: i18n.__('validation.invalid.city_id') });
-    }
-
-    Zone.getById(zone_id, (err, zoneResult) => {
-      if (err || zoneResult.length === 0) {
-        return res.status(400).json({ error: i18n.__('validation.invalid.zone_id') });
-      }
-
-      const regionData = { name, city_id, zone_id, user_id, type, sales_target, description, state };
-
-      Region.update(id, regionData, (err, result) => {
-        if (err) return res.status(500).json({ error: i18n.__('messages.error_updating_region') });
-
-        if (result.affectedRows === 0) {
-          return res.status(404).json({ error: i18n.__('validation.invalid.region_not_found') });
+    // Validate required fields
+    if (!name || !city_id || !zone_id) {
+      return res.status(400).json({
+        message: i18n.__('validation.required.fields'),
+        errors: {
+          ...( !name && { name: i18n.__('validation.required.region_name') }),
+          ...( !city_id && { city_id: i18n.__('validation.invalid.city_id') }),
+          ...( !zone_id && { zone_id: i18n.__('validation.invalid.zone_id') }),
         }
-
-        res.status(200).json({ message: i18n.__('messages.region_updated') });
       });
-    });
-  });
-};
-
-// Soft delete region
-exports.deleteRegion = (req, res) => {
-  const { id } = req.params;
-
-  Region.deleteSoft(id, (err, result) => {
-    if (err) return res.status(500).json({ error: i18n.__('messages.error_deleting_region') });
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: i18n.__('validation.invalid.region_not_found') });
     }
 
-    res.status(200).json({ message: i18n.__('messages.region_deleted') });
-  });
+    Region.create(req.body, (err, result) => {
+      if (err) return res.status(500).json({ message: i18n.__('messages.error_creating_region'), error: err });
+      res.status(201).json({ message: i18n.__('messages.region_created'), id: result.insertId });
+    });
+  },
+
+  // Get all regions
+  getAll: (req, res) => {
+    Region.getAll((err, results) => {
+      if (err) return res.status(500).json({ message: i18n.__('messages.error_fetching_regions'), error: err });
+      res.status(200).json(results);
+    });
+  },
+
+  // Get region by id
+  getById: (req, res) => {
+    Region.getById(req.params.id, (err, results) => {
+      if (err) return res.status(500).json({ message: i18n.__('messages.error_fetching_region'), error: err });
+      if (!results.length) return res.status(404).json({ message: i18n.__('validation.invalid.region_not_found') });
+      res.status(200).json(results[0]);
+    });
+  },
+
+  // Update region
+  update: (req, res) => {
+    const { name, city_id, zone_id } = req.body;
+
+    // Validate required fields
+    if (!name || !city_id || !zone_id) {
+      return res.status(400).json({
+        message: i18n.__('validation.required.fields'),
+        errors: {
+          ...( !name && { name: i18n.__('validation.required.region_name') }),
+          ...( !city_id && { city_id: i18n.__('validation.invalid.city_id') }),
+          ...( !zone_id && { zone_id: i18n.__('validation.invalid.zone_id') }),
+        }
+      });
+    }
+
+    Region.update(req.params.id, req.body, (err, result) => {
+      if (err) return res.status(500).json({ message: i18n.__('messages.error_updating_region'), error: err });
+      res.status(200).json({ message: i18n.__('messages.region_updated') });
+    });
+  },
+
+  // Soft delete region
+  delete: (req, res) => {
+    Region.deleteSoft(req.params.id, (err, result) => {
+      if (err) return res.status(500).json({ message: i18n.__('messages.error_deleting_region'), error: err });
+      res.status(200).json({ message: i18n.__('messages.region_deleted') });
+    });
+  },
+
+  // Filter regions
+  filter: (req, res) => {
+
+    console.log(req.query);
+
+    Region.filter(req.query, (err, results) => {
+      if (err) return res.status(500).json({ message: i18n.__('messages.error_fetching_regions'), error: err });
+      res.status(200).json(results);
+    });
+  }
 };
+
+module.exports = RegionController;

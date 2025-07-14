@@ -117,14 +117,13 @@ exports.getTransactionsByFilters = (req, res) => {
     return res.status(400).json({ error: i18n.__('validation.required.date_range') });
   }
 
-  ItemTransaction.getByFilters(filters, (err, results) => {
+ ItemTransaction.getByFilters(filters, (err, results) => {
     if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_transactions') });
-    if (results.length === 0) {
-      return res.status(404).json({ message: i18n.__('messages.no_transactions_found') });
-    }
+    // Always return 200, even if empty
     res.status(200).json({
       message: i18n.__('messages.transactions_found', { count: results.length }),
-      transactions: results
+      transactions: results,
+      total: results.length
     });
   });
 };

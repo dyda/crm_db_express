@@ -363,6 +363,7 @@
 		"exchange_rate_zero": "Exchange rate cannot be zero",
 		"stored_exchange_rate_zero": "Stored exchange rate cannot be zero",
 		"currency_conversion_failed": "Currency conversion failed: {error}"
+	
 	},
 	"types": {
 		"direct": "Direct",

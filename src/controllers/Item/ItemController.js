@@ -86,6 +86,23 @@ exports.getItemById = (req, res) => {
   });
 };
 
+exports.searchItems = (req, res) => {
+  const { q = '', page = 1, pageSize = 20 } = req.query;
+  const filters = {
+    name: q,
+    barcode: q,
+    page,
+    pageSize,
+    sortBy: 'name',
+    sortOrder: 'asc'
+  };
+  Item.getByFilters(filters, (err, result) => {
+    if (err) return res.status(500).json({ error: 'هەڵە لە گەڕان' });
+    const items = (result.results || result).map(i => ({ id: i.id, name: i.name }));
+    res.json({ items, total: result.total || items.length });
+  });
+};
+
  // Get Filtered Items
 
 exports.getFilteredItems = (req, res) => {

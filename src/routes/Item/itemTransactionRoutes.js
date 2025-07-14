@@ -12,8 +12,7 @@ router.get('/index', authenticate, ItemTransactionController.getAllTransactions)
 // Get an item transaction by ID
 router.get('/show/:id', authenticate, ItemTransactionController.getTransactionById);
 // Get item transactions by filters
-router.get('/filter', authenticate, ItemTransactionController.getTransactionsByFilters);
-
+router.post('/filter', authenticate, ItemTransactionController.getTransactionsByFilters);
 // Update an item transaction
 router.put('/update/:id', authenticate, ItemTransactionController.updateTransaction);
 

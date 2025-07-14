@@ -3,22 +3,23 @@ const router = express.Router();
 const RegionController = require('../../controllers/Region/RegionController');
 const authenticate = require('../../middlewares/authMiddleware');
 
-// Create a region
-router.post('/store', authenticate, RegionController.createRegion);
+// Create
+router.post('/store', authenticate, RegionController.create);
 
-// Get all regions
-router.get('/index', authenticate, RegionController.getAllRegions);
+// Get all
+router.get('/index', authenticate, RegionController.getAll);
 
-// Filter regions
-router.get('/filter', authenticate,RegionController.filterRegions);
+// Get by id
+router.get('/:id', authenticate, RegionController.getById);
 
-// Get a region by ID
-router.get('/show/:id', authenticate, RegionController.getRegionById);
+// Filter
+router.get('/filter', authenticate, RegionController.filter);
+// Update
+router.put('/update/:id', authenticate, RegionController.update);
 
-// Update a region
-router.put('/update/:id', authenticate, RegionController.updateRegion);
+// Soft delete
+router.delete('/delete/:id', authenticate, RegionController.delete);
 
-// Soft delete a region
-router.delete('/delete/:id', authenticate, RegionController.deleteRegion);
+
 
 module.exports = router;
