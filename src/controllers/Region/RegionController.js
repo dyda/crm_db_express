@@ -32,6 +32,19 @@ const RegionController = {
     });
   },
 
+   // Filter regions
+filter: (req, res) => {
+
+
+  Region.filter(req.query, (err, data) => {
+    if (err) return res.status(500).json({ message: i18n.__('messages.error_fetching_regions'), error: err });
+    res.status(200).json({
+      regions: data.results,
+      total: data.total,
+    });
+  });
+},
+
   // Get region by id
   getById: (req, res) => {
     Region.getById(req.params.id, (err, results) => {
@@ -69,18 +82,8 @@ const RegionController = {
       if (err) return res.status(500).json({ message: i18n.__('messages.error_deleting_region'), error: err });
       res.status(200).json({ message: i18n.__('messages.region_deleted') });
     });
-  },
-
-  // Filter regions
-  filter: (req, res) => {
-
-    console.log(req.query);
-
-    Region.filter(req.query, (err, results) => {
-      if (err) return res.status(500).json({ message: i18n.__('messages.error_fetching_regions'), error: err });
-      res.status(200).json(results);
-    });
   }
+
 };
 
 module.exports = RegionController;

@@ -42,22 +42,30 @@ exports.getAllBranches = (req, res) => {
     res.status(200).json(results);
   });
 };
-// Filter Branches
 exports.filterBranches = (req, res) => {
   const filters = {
-    user_id: req.query.user_id, // Filter by user ID
-    branch_name: req.query.branch_name, // Filter by branch name
-    city_id: req.query.city_id, // Filter by city ID
-    region_id: req.query.region_id, // Filter by region ID
+    id: req.query.id,
+    branch_name: req.query.branch_name,
+    city_id: req.query.city_id,
+    region_id: req.query.region_id,
+    company_id: req.query.company_id,
+    user_id: req.query.user_id,
+    page: req.query.page,
+    pageSize: req.query.pageSize,
+    sortBy: req.query.sortBy,
+    sortOrder: req.query.sortOrder,
   };
 
-  Branch.filter(filters, (err, results) => {
+  Branch.filter(filters, (err, data) => {
     if (err) {
       console.error('Error filtering branches:', err);
       return res.status(500).json({ error: 'Error filtering branches' });
     }
-
-    res.status(200).json(results);
+    // Return results and total count for pagination
+    res.status(200).json({
+      branches: data.results,
+      total: data.total,
+    });
   });
 };
 

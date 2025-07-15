@@ -35,6 +35,7 @@ const itemPriceTypeRoutes = require('./Item/itemPriceTypeRoutes');
 const itemPriceRoutes = require('./Item/itemPriceRoutes');
 const itemTransferRoutes = require('./Item/itemTransferRoutes');
 const itemTransactionRoutes = require('./Item/itemTransactionRoutes');
+const itemDamageRoutes =require('./Item/itemDamageRoutes');
 
 // Currency
 const currencyRoutes = require('./Currency/currencyRoutes');
@@ -73,6 +74,7 @@ router.use('/item-price-type', itemPriceTypeRoutes);
 router.use('/item-price', itemPriceRoutes);
 router.use('/item-transfer', itemTransferRoutes);
 router.use('/item-transaction', itemTransactionRoutes);
+router.use('/item-damage', itemDamageRoutes);
 
 router.use('/currency', currencyRoutes);
 router.use('/currency-rates', currencyRateRoutes);

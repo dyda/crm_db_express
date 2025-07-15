@@ -23,6 +23,9 @@ class Region {
       FROM region
       WHERE deleted_at IS NULL
     `;
+
+       
+
     db.query(query, callback);
   }
 
@@ -65,12 +68,15 @@ class Region {
 
   // Modern filter function
 static filter(params, callback) {
-  let query = `
-    SELECT id, name, city_id, zone_id, description, created_at, updated_at, deleted_at
-    FROM region
-    WHERE deleted_at IS NULL
-  `;
+  let query = `SELECT SQL_CALC_FOUND_ROWS id, name, city_id, zone_id, description, created_at, updated_at, deleted_at FROM region WHERE deleted_at IS NULL`;
+  
+
   const values = [];
+
+   if (params.id !== undefined && params.id !== null && params.id !== '') {
+    query += ' AND id = ?';
+    values.push(Number(params.id));
+  }
 
   if (params.region_name && params.region_name.trim() !== '') {
     query += ' AND name LIKE ?';
@@ -85,7 +91,31 @@ static filter(params, callback) {
     values.push(Number(params.zone_id));
   }
 
-  db.query(query, values, callback);
+  // Sorting
+  let sortBy = params.sortBy || 'id';
+  let sortOrder = params.sortOrder === 'asc' ? 'ASC' : 'DESC';
+  const allowedSortFields = ['id', 'name', 'city_id', 'zone_id', 'created_at', 'updated_at'];
+  if (!allowedSortFields.includes(sortBy)) sortBy = 'id';
+
+  query += ` ORDER BY ${sortBy} ${sortOrder}`;
+
+     
+  // Pagination
+  let limit = 10, offset = 0;
+  if (params.pageSize) limit = parseInt(params.pageSize, 10);
+  if (params.page) offset = (parseInt(params.page, 10) - 1) * limit;
+  query += ` LIMIT ? OFFSET ?`;
+  values.push(limit, offset);
+
+  db.query(query, values, (err, results) => {
+    if (err) return callback(err);
+    db.query('SELECT FOUND_ROWS() as total', (err2, totalRows) => {
+      if (err2) return callback(err2);
+      callback(null, { results, total: totalRows[0].total });
+    });
+  });
+
+  
 }
 }
 

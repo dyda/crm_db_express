@@ -11,7 +11,7 @@ router.get('/index', authenticate, ZoneController.getAllZones);
 
 // Get a customer zone by ID
 router.get('/show/:id', authenticate, ZoneController.getZoneById);
-
+router.get('/filter', authenticate, ZoneController.filterZones);
 // Update a customer zone
 router.put('/update/:id', authenticate, ZoneController.updateZone);
 

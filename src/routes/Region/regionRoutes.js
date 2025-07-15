@@ -9,11 +9,12 @@ router.post('/store', authenticate, RegionController.create);
 // Get all
 router.get('/index', authenticate, RegionController.getAll);
 
+// Filter
+router.get('/filter', authenticate, RegionController.filter);
+
 // Get by id
 router.get('/:id', authenticate, RegionController.getById);
 
-// Filter
-router.get('/filter', authenticate, RegionController.filter);
 // Update
 router.put('/update/:id', authenticate, RegionController.update);
 

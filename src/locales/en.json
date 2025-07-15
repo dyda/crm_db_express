@@ -107,7 +107,9 @@
 			"type": "Invalid invoice type. Allowed types are 'direct', 'cash', or 'loan'.",
 			"buy_item_not_found": "Buy item not found",
 			"buy_invoice": "validation.invalid.buy_invoice",
-			"item_unit": "validation.invalid.item_unit"
+			"item_unit": "validation.invalid.item_unit",
+		    "damage_not_found": "Item damage record not found."
+
 		},
 		"unique": {
 			"branch_name": "Branch name already exists",

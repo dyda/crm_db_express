@@ -3,32 +3,28 @@ const i18n = require('../../config/i18nConfig'); // Import i18n for localization
 
 // Create zone
 exports.createZone = (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, city_id, sales_target } = req.body;
 
-  // Validate required fields
   if (!name) {
     return res.status(400).json({ error: i18n.__('validation.required.zone_name') });
   }
 
-    // Check if the zone name is unique
-    Zone.getByName(name, (err, result) => {
+  Zone.getByName(name, (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: i18n.__('messages.error_fetching_zone') });
+    }
+    if (result.length > 0) {
+      return res.status(400).json({ error: i18n.__('validation.unique.zone_name') });
+    }
+
+    const zoneData = { name, description, city_id, sales_target };
+    Zone.create(zoneData, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: i18n.__('messages.error_fetching_zone') });
+        return res.status(500).json({ error: i18n.__('messages.error_creating_zone') });
       }
-      if (result.length > 0) {
-        return res.status(400).json({ error: i18n.__('validation.unique.zone_name') });
-      }
-  
-      // Prepare data for saving
-      const zoneData = { name, description };
-  
-      Zone.create(zoneData, (err, result) => {
-        if (err) {
-          return res.status(500).json({ error: i18n.__('messages.error_creating_zone') });
-        }
-        res.status(201).json({ message: i18n.__('messages.zone_created'), zone: { id: result.insertId, ...zoneData } });
-      });
+      res.status(201).json({ message: i18n.__('messages.zone_created'), zone: { id: result.insertId, ...zoneData } });
     });
+  });
 };
 
 // Get all zones
@@ -40,6 +36,19 @@ exports.getAllZones = (req, res) => {
     res.status(200).json(result);
   });
 };
+
+// Filter zones
+exports.filterZones = (req, res) => {
+  Zone.filter(req.query, (err, data) => {
+    if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_zones') });
+    res.status(200).json({
+      zones: data.results,
+      total: data.total,
+    });
+  });
+};
+
+
 
 // Get zone by ID
 exports.getZoneById = (req, res) => {
@@ -55,17 +64,16 @@ exports.getZoneById = (req, res) => {
   });
 };
 
+
 // Update zone
 exports.updateZone = (req, res) => {
   const { id } = req.params;
-  const { name, description } = req.body;
+  const { name, description, city_id, sales_target } = req.body;
 
-  // Validate required fields
   if (!name) {
     return res.status(400).json({ error: i18n.__('validation.required.zone_name') });
   }
 
-  // Check if the zone name is unique
   Zone.getByName(name, (err, result) => {
     if (err) {
       return res.status(500).json({ error: i18n.__('messages.error_fetching_zone') });
@@ -74,9 +82,7 @@ exports.updateZone = (req, res) => {
       return res.status(400).json({ error: i18n.__('validation.unique.zone_name') });
     }
 
-    // Prepare data for updating
-    const zoneData = { name, description };
-
+    const zoneData = { name, description, city_id, sales_target };
     Zone.update(id, zoneData, (err, result) => {
       if (err) {
         return res.status(500).json({ error: i18n.__('messages.error_updating_zone') });
