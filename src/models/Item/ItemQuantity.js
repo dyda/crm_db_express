@@ -25,6 +25,14 @@ class ItemQuantity {
     db.query(query, values, callback);
   }
 
+static exists(warehouse_id, item_id, callback) {
+    const query = 'SELECT 1 FROM item_quantity WHERE warehouse_id = ? AND item_id = ? AND deleted_at IS NULL LIMIT 1';
+    db.query(query, [warehouse_id, item_id], (err, rows) => {
+      if (err) return callback(err, false);
+      callback(null, rows && rows.length > 0);
+    });
+  }
+
   static deleteSoft(id, callback) {
     const query = `UPDATE item_quantity SET deleted_at = NOW() WHERE id = ?`;
     db.query(query, [id], callback);

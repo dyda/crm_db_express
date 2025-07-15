@@ -91,7 +91,6 @@
 			"price_type_id": "Invalid Price Type ID",
 			"item_price_not_found": "Item price not found",
 			"item_price_type_not_found": "Item price type not found",
-			"item_quantity_not_found": "Item quantity not found",
 			"transaction_type": "Invalid transaction type",
 			"transaction_not_found": "Transaction not found",
 			"transfer_not_found": "Transfer not found",
@@ -108,8 +107,8 @@
 			"buy_item_not_found": "Buy item not found",
 			"buy_invoice": "validation.invalid.buy_invoice",
 			"item_unit": "validation.invalid.item_unit",
-		    "damage_not_found": "Item damage record not found."
-
+		    "damage_not_found": "Item damage record not found.",
+			"item_quantity_not_found": "Item quantity for this warehouse and item does not exist"
 		},
 		"unique": {
 			"branch_name": "Branch name already exists",

@@ -30,15 +30,24 @@ exports.create = (req, res) => {
   if (validationError) return res.status(400).json({ error: validationError });
 
   const { warehouse_id, item_id, unit_id, quantity } = req.body;
-  ItemDamage.create(req.body, (err, result) => {
-    if (err) return res.status(500).json({ error: err });
 
-    // Decrease item quantity in warehouse/unit (convert to base unit)
-    getConversionFactor(unit_id, (conversion) => {
-      const baseQty = parseFloat(quantity) * parseFloat(conversion);
-      ItemQuantity.decreaseQuantity(warehouse_id, item_id, baseQty, (err2) => {
-        if (err2) return res.status(500).json({ error: err2 });
-        res.json({ success: true, id: result.insertId });
+  // Use ItemQuantity.exists for validation
+  ItemQuantity.exists(warehouse_id, item_id, (err, exists) => {
+    if (err) return res.status(500).json({ error: err });
+    if (!exists) {
+      return res.status(400).json({ error: i18n.__('validation.invalid.item_quantity_not_found') });
+    }
+
+    ItemDamage.create(req.body, (err, result) => {
+      if (err) return res.status(500).json({ error: err });
+
+      // Decrease item quantity in warehouse/unit (convert to base unit)
+      getConversionFactor(unit_id, (conversion) => {
+        const baseQty = parseFloat(quantity) * parseFloat(conversion);
+        ItemQuantity.decreaseQuantity(warehouse_id, item_id, baseQty, (err2) => {
+          if (err2) return res.status(500).json({ error: err2 });
+          res.json({ success: true, id: result.insertId });
+        });
       });
     });
   });
@@ -80,57 +89,65 @@ exports.update = (req, res) => {
     const old = oldRows[0];
     const { warehouse_id, item_id, unit_id, quantity } = req.body;
 
-    // Get conversion factors for old and new units
-    getConversionFactor(old.unit_id, (oldConv) => {
-      getConversionFactor(unit_id, (newConv) => {
-        const oldBaseQty = parseFloat(old.quantity) * parseFloat(oldConv);
-        const newBaseQty = parseFloat(quantity) * parseFloat(newConv);
-        const diff = newBaseQty - oldBaseQty;
+    // Validate item_quantity existence before update
+    ItemQuantity.exists(warehouse_id, item_id, (err, exists) => {
+      if (err) return res.status(500).json({ error: err });
+      if (!exists) {
+        return res.status(400).json({ error: i18n.__('validation.invalid.item_quantity_not_found') });
+      }
 
-        // If warehouse or item changed, revert old, apply new
-        if (old.warehouse_id !== warehouse_id || old.item_id !== item_id) {
-          // 1. Revert old
-          ItemQuantity.increaseQuantity(old.warehouse_id, old.item_id, oldBaseQty, (err1) => {
-            if (err1) return res.status(500).json({ error: err1 });
-            // 2. Apply new
-            ItemQuantity.decreaseQuantity(warehouse_id, item_id, newBaseQty, (err2) => {
-              if (err2) return res.status(500).json({ error: err2 });
+      // Get conversion factors for old and new units
+      getConversionFactor(old.unit_id, (oldConv) => {
+        getConversionFactor(unit_id, (newConv) => {
+          const oldBaseQty = parseFloat(old.quantity) * parseFloat(oldConv);
+          const newBaseQty = parseFloat(quantity) * parseFloat(newConv);
+          const diff = newBaseQty - oldBaseQty;
+
+          // If warehouse or item changed, revert old, apply new
+          if (old.warehouse_id !== warehouse_id || old.item_id !== item_id) {
+            // 1. Revert old
+            ItemQuantity.increaseQuantity(old.warehouse_id, old.item_id, oldBaseQty, (err1) => {
+              if (err1) return res.status(500).json({ error: err1 });
+              // 2. Apply new
+              ItemQuantity.decreaseQuantity(warehouse_id, item_id, newBaseQty, (err2) => {
+                if (err2) return res.status(500).json({ error: err2 });
+                ItemDamage.update(id, req.body, (err3) => {
+                  if (err3) return res.status(500).json({ error: err3 });
+                  res.json({ success: true });
+                });
+              });
+            });
+          } else {
+            // Same warehouse/item, just adjust difference
+            if (diff !== 0) {
+              if (diff > 0) {
+                // Need to decrease more
+                ItemQuantity.decreaseQuantity(warehouse_id, item_id, diff, (err2) => {
+                  if (err2) return res.status(500).json({ error: err2 });
+                  ItemDamage.update(id, req.body, (err3) => {
+                    if (err3) return res.status(500).json({ error: err3 });
+                    res.json({ success: true });
+                  });
+                });
+              } else {
+                // Need to increase back
+                ItemQuantity.increaseQuantity(warehouse_id, item_id, Math.abs(diff), (err2) => {
+                  if (err2) return res.status(500).json({ error: err2 });
+                  ItemDamage.update(id, req.body, (err3) => {
+                    if (err3) return res.status(500).json({ error: err3 });
+                    res.json({ success: true });
+                  });
+                });
+              }
+            } else {
+              // Only update damage record
               ItemDamage.update(id, req.body, (err3) => {
                 if (err3) return res.status(500).json({ error: err3 });
                 res.json({ success: true });
               });
-            });
-          });
-        } else {
-          // Same warehouse/item, just adjust difference
-          if (diff !== 0) {
-            if (diff > 0) {
-              // Need to decrease more
-              ItemQuantity.decreaseQuantity(warehouse_id, item_id, diff, (err2) => {
-                if (err2) return res.status(500).json({ error: err2 });
-                ItemDamage.update(id, req.body, (err3) => {
-                  if (err3) return res.status(500).json({ error: err3 });
-                  res.json({ success: true });
-                });
-              });
-            } else {
-              // Need to increase back
-              ItemQuantity.increaseQuantity(warehouse_id, item_id, Math.abs(diff), (err2) => {
-                if (err2) return res.status(500).json({ error: err2 });
-                ItemDamage.update(id, req.body, (err3) => {
-                  if (err3) return res.status(500).json({ error: err3 });
-                  res.json({ success: true });
-                });
-              });
             }
-          } else {
-            // Only update damage record
-            ItemDamage.update(id, req.body, (err3) => {
-              if (err3) return res.status(500).json({ error: err3 });
-              res.json({ success: true });
-            });
           }
-        }
+        });
       });
     });
   });
