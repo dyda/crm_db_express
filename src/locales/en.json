@@ -58,7 +58,10 @@
 			"currency_to_id": "Currency to ID is required",
 			"amount_from": "Amount from is required",
 			"amount_to": "Amount to is required",
-			"rate_used": "Rate used is required"
+			"rate_used": "Rate used is required",
+			 "serial_type": "Type is required.",
+			"serial_name": "Name is required.",
+			"serial_date_at": "Date is required."
 		},
 		"invalid": {
 			"company_id": "Invalid Company ID",
@@ -108,7 +111,9 @@
 			"buy_invoice": "validation.invalid.buy_invoice",
 			"item_unit": "validation.invalid.item_unit",
 		    "damage_not_found": "Item damage record not found.",
-			"item_quantity_not_found": "Item quantity for this warehouse and item does not exist"
+			"item_quantity_not_found": "Item quantity for this warehouse and item does not exist",
+			"serial_not_found": "Serial not found."
+			
 		},
 		"unique": {
 			"branch_name": "Branch name already exists",
@@ -363,7 +368,18 @@
 		"converter_not_found": "Currency conversion record not found",
 		"exchange_rate_zero": "Exchange rate cannot be zero",
 		"stored_exchange_rate_zero": "Stored exchange rate cannot be zero",
-		"currency_conversion_failed": "Currency conversion failed: {error}"
+		"currency_conversion_failed": "Currency conversion failed: {error}",
+		 "serial_created": "Serial successfully created",
+		"serial_updated": "Serial successfully updated",
+		"serial_deleted": "Serial successfully deleted",
+		"serials_found": "{count} serials found",
+		"serial_fetched": "Serial with ID {id} fetched successfully",
+		"error_creating_serial": "Error occurred while creating the serial",
+		"error_updating_serial": "Error occurred while updating the serial",
+		"error_deleting_serial": "Error occurred while deleting the serial",
+		"error_fetching_serials": "Error occurred while fetching serials",
+		"error_fetching_serial": "Error occurred while fetching the serial"
+
 	
 	},
 	"types": {

@@ -12,6 +12,9 @@ router.get('/index', authenticate, ItemUnitController.getAllItemUnits);
 // Get an item unit by ID
 router.get('/show/:id', authenticate, ItemUnitController.getItemUnitById);
 
+// Get item units by item ID
+router.get('/get/:item_id', authenticate, ItemUnitController.getUnitsByItemId);
+
 // Update an item unit
 router.put('/update/:id', authenticate, ItemUnitController.updateItemUnit);
 

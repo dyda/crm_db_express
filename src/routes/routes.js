@@ -45,6 +45,9 @@ const currencyRateRoutes = require('./CurrencyRate/currencyRateRoutes');
 const buyInvoiceRoutes = require('./Buy/buyInvoiceRoutes');
 const buyItemRoutes = require('./Buy/buyItemRoutes');
 
+// Serial
+const serialRoutes = require('./Serial/serialRoutes');
+
 // Route usage
 router.use('/company', companyRoutes);
 router.use('/capital', capitalRoutes);
@@ -75,6 +78,9 @@ router.use('/item-price', itemPriceRoutes);
 router.use('/item-transfer', itemTransferRoutes);
 router.use('/item-transaction', itemTransactionRoutes);
 router.use('/item-damage', itemDamageRoutes);
+
+// Serial
+router.use('/serial', serialRoutes);
 
 router.use('/currency', currencyRoutes);
 router.use('/currency-rates', currencyRateRoutes);

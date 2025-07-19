@@ -30,6 +30,9 @@ class ItemPrice {
     db.query(query, values, callback);
   }
 
+
+
+
   static deleteSoft(id, callback) {
     const query = `UPDATE item_price SET deleted_at = NOW() WHERE id = ?`;
     db.query(query, [id], callback);

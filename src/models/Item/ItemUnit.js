@@ -18,6 +18,18 @@ class ItemUnit {
     db.query(query, [id], callback);
   }
 
+
+  static getUnitsByItemId(itemId, callback) {
+    const query = `
+      SELECT iu.*
+      FROM item_unit iu
+      INNER JOIN item_price ip ON iu.id = ip.unit_id
+      WHERE ip.item_id = ? AND iu.deleted_at IS NULL
+      GROUP BY iu.id
+    `;
+    db.query(query, [itemId], callback);
+  }
+
   static update(id, data, callback) {
     const query = `UPDATE item_unit SET name = ?, description = ?, conversion_factor = ?, updated_at = NOW()
                    WHERE id = ? AND deleted_at IS NULL`;

@@ -48,6 +48,16 @@ exports.getItemUnitById = (req, res) => {
   });
 };
 
+exports.getUnitsByItemId = (req, res) => {
+  const itemId = req.params.item_id;
+  ItemUnit.getUnitsByItemId(itemId, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: i18n.__('messages.error_fetching_item_unit') });
+    }
+    res.status(200).json(results);
+  });
+};
+
 // Update Item Unit
 exports.updateItemUnit = (req, res) => {
   const itemUnitId = req.params.id;
