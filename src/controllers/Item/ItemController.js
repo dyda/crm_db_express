@@ -72,6 +72,35 @@ exports.getAllItems = (req, res) => {
   });
 };
 
+exports.getItemFullInfo = (req, res) => {
+  // Collect filters from query parameters
+  const filters = {
+    id: req.query.id,
+    category_id: req.query.category_id,
+    brand_id: req.query.brand_id,
+    branch_id: req.query.branch_id,
+    name: req.query.name,
+    barcode: req.query.barcode,
+    unit_id: req.query.unit_id,
+    warehouse_id: req.query.warehouse_id,
+    min_quantity: req.query.min_quantity,
+    max_quantity: req.query.max_quantity,
+    sortBy: req.query.sortBy,
+    sortOrder: req.query.sortOrder,
+    page: req.query.page,
+    pageSize: req.query.pageSize
+  };
+
+  Item.getItemFullInfo(filters, (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: i18n.__('messages.error_fetching_items')  });
+    }
+    res.json(result);
+  });
+};
+
+
+
 // Get Item by ID
 exports.getItemById = (req, res) => {
   const itemId = req.params.id;
@@ -98,7 +127,7 @@ exports.searchItems = (req, res) => {
   };
   Item.getByFilters(filters, (err, result) => {
     if (err) return res.status(500).json({ error: 'هەڵە لە گەڕان' });
-    const items = (result.results || result).map(i => ({ id: i.id, name: i.name }));
+    const items = (result.results || result).map(i => ({ id: i.id, name: i.name}));
     res.json({ items, total: result.total || items.length });
   });
 };
