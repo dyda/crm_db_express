@@ -30,12 +30,14 @@ class Item {
       MAX(w.name) AS warehouse_name, 
       SUM(iq.quantity) AS quantity,
       MAX(ib.name) AS brand_name, 
-      MAX(ic.name) AS category_name
+      MAX(ic.name) AS category_name,
+      MAX(b.name) AS branch_name
     FROM item i
     LEFT JOIN item_brand ib ON ib.id = i.brand_id
     LEFT JOIN item_category ic ON i.category_id = ic.id
     LEFT JOIN item_quantity iq ON i.id = iq.item_id
     LEFT JOIN warehouse w ON iq.warehouse_id = w.id
+    LEFT JOIN branch b on b.id=w.branch_id
     WHERE i.deleted_at IS NULL
   `;
 
@@ -60,7 +62,7 @@ class Item {
 
     // Branch filter
     if (filters.branch_id) {
-      query += ` AND i.branch_id = ?`;
+      query += ` AND w.branch_id = ?`;
       values.push(filters.branch_id);
     }
 
@@ -107,7 +109,7 @@ class Item {
   }
 
   // GROUP BY to get one row per item per warehouse
-  query += ` GROUP BY i.id, iq.warehouse_id,ib.id,ic.id`;
+  query += ` GROUP BY i.id, iq.warehouse_id,ib.id,ic.id,b.id`;
 
   // Sorting
   const allowedSortFields = [
