@@ -6,7 +6,7 @@ const i18n = require('../../config/i18nConfig');
 
 // Create customer
 exports.create = (req, res) => {
-  const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start } = req.body;
+const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude } = req.body;
 
   // Validate input
   if (!name) {
@@ -47,7 +47,7 @@ exports.create = (req, res) => {
           }
 
       // Prepare data for saving
-      const customerData = { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start };
+      const customerData = { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude };
 
       customerData.city_id = customerData.city_id || 0;
       Customer.create(customerData, (err, result) => {
@@ -85,7 +85,7 @@ exports.getById = (req, res) => {
 // Update customer
 exports.update = (req, res) => {
   const { id } = req.params;
-  const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start } = req.body;
+const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude } = req.body;
 
   // Validate input
   if (!name) {
@@ -120,7 +120,7 @@ exports.update = (req, res) => {
       }
 
       // Prepare data for updating
-      const customerData = { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start };
+const customerData = { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude };
 
       Customer.update(id, customerData, (err, result) => {
         if (err) {
