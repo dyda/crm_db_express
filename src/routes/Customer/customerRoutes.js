@@ -9,6 +9,8 @@ router.post('/store', authenticate,CustomerController.create);
 // Get all customers
 router.get('/index', authenticate,CustomerController.getAll);
 
+// Fillter customers
+router.get('/filter', authenticate,CustomerController.filter);
 // Get a customer by ID
 router.get('/show/:id', authenticate,CustomerController.getById);
 

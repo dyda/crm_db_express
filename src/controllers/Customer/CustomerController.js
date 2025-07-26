@@ -4,10 +4,16 @@ const City = require('../../models/City/City'); // Assuming you have a City mode
 const CustomerCategory = require('../../models/Customer/CustomerCategory');
 const i18n = require('../../config/i18nConfig');
 
+
+function toNumberOrZero(val) {
+  return val === undefined || val === null || val === '' ? 0 : Number(val);
+}
+
+
 // Create customer
 exports.create = (req, res) => {
-const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude } = req.body;
 
+let { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude, mandub_id, currency_id, price_type_id } = req.body;
   // Validate input
   if (!name) {
     return res.status(400).json({ error: i18n.__('validation.required.customer_name') });
@@ -18,9 +24,7 @@ const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id,
   if (!type) {
     return res.status(400).json({ error: i18n.__('validation.required.customer_type') });
   }
-  if (!state) {
-    return res.status(400).json({ error: i18n.__('validation.required.customer_state') });
-  }
+
   if (!zone_id) {
     return res.status(400).json({ error: i18n.__('validation.required.zone_id') });
   }
@@ -46,12 +50,26 @@ const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id,
             return res.status(400).json({ error: i18n.__('validation.invalid.city_id') });
           }
 
-      // Prepare data for saving
-      const customerData = { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude };
 
+            mandub_id = toNumberOrZero(mandub_id);
+            loan = toNumberOrZero(loan);
+            loan_start = toNumberOrZero(loan_start);
+            currency_id = toNumberOrZero(currency_id);
+            price_type_id = toNumberOrZero(price_type_id);
+            zone_id = toNumberOrZero(zone_id);
+            category_id = toNumberOrZero(category_id);
+            city_id = toNumberOrZero(city_id);
+            latitude = toNumberOrZero(latitude);
+            longitude = toNumberOrZero(longitude);
+
+      // Prepare data for saving
+      const customerData = { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude, mandub_id, currency_id, price_type_id };
       customerData.city_id = customerData.city_id || 0;
+          
+    
       Customer.create(customerData, (err, result) => {
         if (err) {
+
           if (err.code === 'ER_DUP_ENTRY' && err.sqlMessage.includes('phone_1')) {
             return res.status(400).json({ error: i18n.__('validation.unique.phone_1') });
           }
@@ -82,10 +100,57 @@ exports.getById = (req, res) => {
   });
 };
 
+// filter controller
+
+exports.filter = (req, res) => {
+  const {
+    page = 1,
+    pageSize = 10,
+    sortBy = 'id',
+    sortOrder = 'asc',
+    search,
+    type,
+    state,
+    zone_id,
+    category_id,
+    city_id,
+    mandub_id,
+    currency_id,
+    price_type_id,
+    loan_positive,
+    loan_negative,
+    loan_zero,
+  } = req.query;
+
+  const filters = {
+    page: Number(page) || 1,
+    pageSize: Number(pageSize) || 10,
+    sortBy: sortBy || 'id',
+    sortOrder: sortOrder || 'asc',
+    search,
+    type,
+    state,
+    zone_id,
+    category_id,
+    city_id,
+    mandub_id,
+    currency_id,
+    price_type_id,
+    loan_positive: loan_positive === 'true' || loan_positive === true,
+    loan_negative: loan_negative === 'true' || loan_negative === true,
+    loan_zero: loan_zero === 'true' || loan_zero === true,
+  };
+
+  Customer.filter(filters, (err, results) => {
+    if (err) return res.status(500).json({ error: i18n.__('messages.error_fetching_customers') });
+    res.status(200).json(results);
+  });
+};
+
 // Update customer
 exports.update = (req, res) => {
   const { id } = req.params;
-const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude } = req.body;
+  let { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude, mandub_id, currency_id, price_type_id } = req.body;
 
   // Validate input
   if (!name) {
@@ -119,8 +184,18 @@ const { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id,
         return res.status(400).json({ error: i18n.__('validation.invalid.customer_category_id') });
       }
 
+            mandub_id = toNumberOrZero(mandub_id);
+            zone_id = toNumberOrZero(zone_id);
+            category_id = toNumberOrZero(category_id);
+            city_id = toNumberOrZero(city_id);
+            latitude = toNumberOrZero(latitude);
+            longitude = toNumberOrZero(longitude);
+            currency_id = toNumberOrZero(currency_id);
+            price_type_id = toNumberOrZero(price_type_id);
+
+
       // Prepare data for updating
-const customerData = { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude };
+  const customerData = { category_id, zone_id, code, name, phone_1, phone_2, type, note, city_id, kafyl_name, kafyl_phone, state, address, cobon, limit_loan_price, limit_loan_day, loan, loan_start, latitude, longitude, mandub_id, currency_id, price_type_id };
 
       Customer.update(id, customerData, (err, result) => {
         if (err) {
@@ -175,4 +250,7 @@ exports.decreaseLoan = (req, res) => {
     if (result.affectedRows === 0) return res.status(404).json({ error: i18n.__('validation.invalid.customer_not_found') });
     res.status(200).json({ message: i18n.__('messages.loan_decreased') });
   });
+
 };
+
+
