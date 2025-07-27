@@ -60,7 +60,7 @@ router.use('/region', regionRoutes);
 
 router.use('/customer', customerRoutes);
 router.use('/customer-category', customerCategoryRoutes);
-router.use('/payments', customerPaymentRoutes);
+router.use('/customer/payments', customerPaymentRoutes);
 
 router.use('/user', userRoutes);
 router.use('/salary', salaryRoutes);

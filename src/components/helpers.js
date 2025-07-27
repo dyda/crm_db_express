@@ -32,8 +32,14 @@ const convertToBaseCurrency = async (amount, currency_id) => {
   return { amountInBase, exchange_rate };
 };
 
+const convertToBaseCurrencyWithRate = (amount, exchange_rate) => {
+  if (!exchange_rate || exchange_rate === 0) throw new Error('Exchange rate cannot be zero');
+  return Number(amount) / Number(exchange_rate);
+};
+
 module.exports = {
   getBaseCurrencyId,
   getExchangeRate,
   convertToBaseCurrency,
+  convertToBaseCurrencyWithRate
 };

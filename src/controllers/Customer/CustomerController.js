@@ -90,6 +90,16 @@ exports.getAll = (req, res) => {
   });
 };
 
+exports.autocompleteSearch = (req, res) => {
+  const { q = '', limit = 20 } = req.query;
+  if (!q || q.length < 2) return res.json([]); // Require at least 2 chars
+
+  Customer.autocompleteSearch(q, limit, (err, results) => {
+    if (err) return res.status(500).json({ error: "Error searching customers" });
+    res.json(results);
+  });
+};
+
 // Get customer by ID
 exports.getById = (req, res) => {
   const { id } = req.params;

@@ -21,6 +21,23 @@ class Customer {
     db.query(query, callback);
   }
 
+ static autocompleteSearch(q, limit = 30, callback) {
+  const query = `
+    SELECT id, code, name, phone_1
+    FROM customer
+    WHERE deleted_at IS NULL
+      AND (
+        code LIKE ? OR
+        name LIKE ? OR
+        phone_1 LIKE ?
+      )
+    ORDER BY id DESC
+    LIMIT ?
+  `;
+  const like = `%${q}%`;
+  db.query(query, [like, like, like, Number(limit)], callback);
+}
+
   static getById(id, callback) {
     const query = 'SELECT * FROM customer WHERE id = ? AND deleted_at IS NULL'; // Exclude soft-deleted customers
     db.query(query, [id], callback);
@@ -73,7 +90,6 @@ class Customer {
 
   db.query(query, params, callback);
 }
-
 
     static update(id, data, callback) {
     const query = `UPDATE customer SET category_id = ?, zone_id = ?, code = ?, name = ?, phone_1 = ?, phone_2 = ?, type = ?, note = ?, city_id = ?, kafyl_name = ?, kafyl_phone = ?, state = ?, address = ?, cobon = ?, limit_loan_price = ?, limit_loan_day = ?, loan = ?, loan_start = ?, latitude = ?, longitude = ?, mandub_id = ?, currency_id = ?, price_type_id = ?, updated_at = NOW()

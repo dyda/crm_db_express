@@ -13,6 +13,7 @@ router.get('/index', authenticate,CustomerController.getAll);
 router.get('/filter', authenticate,CustomerController.filter);
 // Get a customer by ID
 router.get('/show/:id', authenticate,CustomerController.getById);
+router.get('/search', authenticate, CustomerController.autocompleteSearch);
 
 // Update a customer
 router.put('/update/:id', authenticate,CustomerController.update);
