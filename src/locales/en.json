@@ -388,8 +388,8 @@
 		"loan": "Loan"
 	},
 	"payment_type": {
-		"payment": "Payment",
-		"receipt": "Receipt"
+		"payment": "پارەدان",
+		"receipt": "وەرگرتن"
 	},
 	"currency": {
 		"name_required": "Currency name is required.",

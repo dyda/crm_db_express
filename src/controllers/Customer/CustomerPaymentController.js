@@ -27,10 +27,6 @@ exports.createPayment = (req, res) => {
     return res.status(400).json({ error: i18n.__('validation.required.currency_id') });
   }
 
-  // Calculate result if not provided
-  paymentData.result = typeof paymentData.result !== 'undefined'
-    ? Number(paymentData.result)
-    : Number(paymentData.amount) - Number(paymentData.discount_result || 0);
 
   Branch.getById(paymentData.branch_id, (err, branchResult) => {
     if (err || branchResult.length === 0) {
@@ -42,6 +38,14 @@ exports.createPayment = (req, res) => {
         return res.status(400).json({ error: i18n.__('validation.invalid.customer_id') });
       }
 
+      const customer = customerResult[0];
+      const currentLoan = Number(customer.loan) || 0;
+      paymentData.loan = currentLoan;
+      paymentData.result = typeof paymentData.result !== 'undefined'
+      ? Number(paymentData.result)
+      : Number(currentLoan) - Number(paymentData.amount) - Number(paymentData.discount_result || 0);
+
+
       try {
         // Always convert the result (final value after discount) to base currency
         const { amountInBase, exchange_rate } = await convertToBaseCurrency(paymentData.result, paymentData.currency_id);
@@ -52,6 +56,27 @@ exports.createPayment = (req, res) => {
 
         paymentData.exchange_rate = parseFloat(exchange_rate);
         paymentData.payment_date = paymentData.payment_date || paymentData.created_at || new Date().toISOString().slice(0, 10);
+        paymentData.loan = currentLoan;
+
+        // Prevent negative or illogical discount_result
+        if (paymentData.discount_result && Number(paymentData.discount_result) < 0) {
+          return res.status(400).json({ error: i18n.__('validation.invalid.discount_result') });
+        }
+        // Prevent fixed discount > loan
+        if (
+          paymentData.discount_type === 'پارە' &&
+          Math.abs(Number(paymentData.discount_result)) > Math.abs(currentLoan)
+        ) {
+          return res.status(400).json({ error: i18n.__('validation.discount_more_than_loan') });
+        }
+
+        // Prevent percent discount > 100
+        if (
+          paymentData.discount_type === 'ڕێژە' &&
+          Number(paymentData.discount_value) > 100
+        ) {
+          return res.status(400).json({ error: i18n.__('validation.discount_percent_too_high') });
+        }
 
 
         CustomerPayment.create(paymentData, (err, result) => {
@@ -166,6 +191,30 @@ exports.updatePayment = (req, res) => {
       if (err || customerResult.length === 0) {
         return res.status(400).json({ error: i18n.__('validation.invalid.customer_id') });
       }
+
+      // Prevent negative or illogical discount_result
+      if (paymentData.discount_result && Number(paymentData.discount_result) < 0) {
+        return res.status(400).json({ error: i18n.__('validation.invalid.discount_result') });
+      }
+
+      // Prevent fixed discount > loan
+      if (
+        paymentData.discount_type === 'پارە' &&
+        Math.abs(Number(paymentData.discount_result)) > Math.abs(currentLoan)
+      ) {
+        return res.status(400).json({ error: i18n.__('validation.discount_more_than_loan') });
+      }
+
+      // Prevent percent discount > 100
+      if (
+        paymentData.discount_type === 'ڕێژە' &&
+        Number(paymentData.discount_value) > 100
+      ) {
+        return res.status(400).json({ error: i18n.__('validation.discount_percent_too_high') });
+      }
+
+
+
 
       CustomerPayment.getById(paymentId, async (err, existingPayment) => {
         if (err) return res.status(500).json({ error: err.message });
