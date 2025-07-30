@@ -43,6 +43,7 @@ class Customer {
     db.query(query, [id], callback);
   }
 
+
   static filter({
   page = 1,
   pageSize = 10,

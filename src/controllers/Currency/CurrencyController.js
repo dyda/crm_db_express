@@ -27,6 +27,14 @@ exports.getAll = (req, res) => {
   });
 };
 
+exports.getBaseCurrency = (req, res) => {
+  Currency.getBaseCurrency((err, rows) => {
+    if (err) return res.status(500).json({ error: i18n.__('currency.fetch_failed') });
+    if (!rows.length) return res.status(404).json({ error: i18n.__('currency.base_not_found') });
+    res.json(rows[0]);
+  });
+};
+
 exports.getById = (req, res) => {
   Currency.getById(req.params.id, (err, rows) => {
     if (err) return res.status(500).json({ error: i18n.__('currency.fetch_failed') });

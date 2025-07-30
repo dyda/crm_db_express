@@ -37,7 +37,17 @@ const convertToBaseCurrencyWithRate = (amount, exchange_rate) => {
   return Number(amount) / Number(exchange_rate);
 };
 
+function getBaseCurrency() {
+  return new Promise((resolve, reject) => {
+    Currency.getBaseCurrency((err, rows) => {
+      if (err || !rows || !rows.length) return resolve(null);
+      resolve(rows[0]);
+    });
+  });
+}
+
 module.exports = {
+  getBaseCurrency,
   getBaseCurrencyId,
   getExchangeRate,
   convertToBaseCurrency,
